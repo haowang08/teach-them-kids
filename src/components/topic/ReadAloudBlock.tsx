@@ -8,9 +8,7 @@ interface ReadAloudBlockProps {
 }
 
 function stripHtml(html: string): string {
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  return div.textContent ?? '';
+  return html.replace(/<[^>]*>/g, '');
 }
 
 export default function ReadAloudBlock({ block }: ReadAloudBlockProps) {
@@ -44,7 +42,7 @@ export default function ReadAloudBlock({ block }: ReadAloudBlockProps) {
         <p
           key={i}
           className="mb-4 last:mb-0 text-[var(--topic-dark-brown)] text-base md:text-lg"
-          dangerouslySetInnerHTML={{ __html: paragraph }}
+          children={paragraph}
         />
       ))}
 

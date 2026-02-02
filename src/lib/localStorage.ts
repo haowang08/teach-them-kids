@@ -11,6 +11,17 @@ export function createEmptyProgress(): CurriculumProgress {
   };
 }
 
+function isValidProgress(data: unknown): data is CurriculumProgress {
+  if (typeof data !== 'object' || data === null) return false;
+  const d = data as Record<string, unknown>;
+  return (
+    typeof d.topics === 'object' && d.topics !== null && !Array.isArray(d.topics) &&
+    typeof d.xp === 'number' &&
+    typeof d.streakDays === 'number' &&
+    typeof d.lastVisit === 'string'
+  );
+}
+
 export function loadProgress(): CurriculumProgress {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -19,7 +30,13 @@ export function loadProgress(): CurriculumProgress {
       saveProgress(fresh);
       return fresh;
     }
-    return JSON.parse(raw) as CurriculumProgress;
+    const parsed = JSON.parse(raw);
+    if (!isValidProgress(parsed)) {
+      const fresh = createEmptyProgress();
+      saveProgress(fresh);
+      return fresh;
+    }
+    return parsed;
   } catch {
     const fresh = createEmptyProgress();
     saveProgress(fresh);

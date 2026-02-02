@@ -101,7 +101,7 @@ export default function TopicPage() {
               <p
                 key={i}
                 className="text-base text-[var(--topic-dark-brown)] leading-relaxed mb-3 last:mb-0"
-                dangerouslySetInnerHTML={{ __html: p }}
+                children={p}
               />
             ))}
           </div>

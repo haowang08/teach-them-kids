@@ -9,12 +9,32 @@ interface SketchfabEmbedProps {
   attribution?: RewardAttribution;
 }
 
+const ALLOWED_EMBED_DOMAINS = ['sketchfab.com'];
+
+function isAllowedUrl(url: string, allowedDomains: string[]): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:' && allowedDomains.some(d => parsed.hostname.endsWith(d));
+  } catch {
+    return false;
+  }
+}
+
+function isSafeHttpsUrl(url: string): boolean {
+  try {
+    return new URL(url).protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 export default function SketchfabEmbed({
   embedUrl,
   embedTitle,
   attribution,
 }: SketchfabEmbedProps) {
   const [loaded, setLoaded] = useState(false);
+  const safeEmbedUrl = isAllowedUrl(embedUrl, ALLOWED_EMBED_DOMAINS) ? embedUrl : null;
 
   return (
     <div className="my-4">
@@ -45,46 +65,63 @@ export default function SketchfabEmbed({
             </button>
             <p className="text-gray-400 text-sm">{embedTitle}</p>
           </div>
-        ) : (
+        ) : safeEmbedUrl ? (
           <iframe
             title={embedTitle}
-            src={embedUrl}
+            src={safeEmbedUrl}
             className="absolute inset-0 w-full h-full"
             allow="autoplay; fullscreen; xr-spatial-tracking"
+            sandbox="allow-scripts allow-same-origin allow-popups"
             allowFullScreen
           />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm">
+            Invalid embed URL
+          </div>
         )}
       </div>
 
       {/* Attribution */}
       {attribution && (
         <p className="text-xs text-[var(--topic-bronze)] mt-2 text-center">
-          <a
-            href={attribution.modelUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold hover:underline"
-          >
-            {attribution.modelName}
-          </a>{' '}
+          {isSafeHttpsUrl(attribution.modelUrl) ? (
+            <a
+              href={attribution.modelUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold hover:underline"
+            >
+              {attribution.modelName}
+            </a>
+          ) : (
+            <span className="font-semibold">{attribution.modelName}</span>
+          )}{' '}
           by{' '}
-          <a
-            href={attribution.authorUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold hover:underline"
-          >
-            {attribution.authorName}
-          </a>{' '}
+          {isSafeHttpsUrl(attribution.authorUrl) ? (
+            <a
+              href={attribution.authorUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold hover:underline"
+            >
+              {attribution.authorName}
+            </a>
+          ) : (
+            <span className="font-semibold">{attribution.authorName}</span>
+          )}{' '}
           on{' '}
-          <a
-            href={attribution.platformUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold hover:underline"
-          >
-            Sketchfab
-          </a>
+          {isSafeHttpsUrl(attribution.platformUrl) ? (
+            <a
+              href={attribution.platformUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold hover:underline"
+            >
+              Sketchfab
+            </a>
+          ) : (
+            <span className="font-semibold">Sketchfab</span>
+          )}
         </p>
       )}
     </div>

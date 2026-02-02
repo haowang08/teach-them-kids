@@ -7,18 +7,25 @@ interface VideoEmbedProps {
   video: VideoData;
 }
 
+const YOUTUBE_ID_RE = /^[a-zA-Z0-9_-]{11}$/;
+
 export default function VideoEmbed({ video }: VideoEmbedProps) {
   const [loaded, setLoaded] = useState(false);
 
-  const thumbnailUrl = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
+  const safeId = YOUTUBE_ID_RE.test(video.youtubeId) ? video.youtubeId : null;
+  const thumbnailUrl = safeId ? `https://img.youtube.com/vi/${safeId}/hqdefault.jpg` : null;
 
   return (
     <div className="my-6">
       <div className="relative w-full overflow-hidden rounded-xl bg-black" style={{ paddingBottom: '56.25%' }}>
-        {loaded ? (
+        {!safeId ? (
+          <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm">
+            Video unavailable
+          </div>
+        ) : loaded ? (
           <iframe
             className="absolute inset-0 w-full h-full"
-            src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?autoplay=1&rel=0`}
+            src={`https://www.youtube-nocookie.com/embed/${safeId}?autoplay=1&rel=0`}
             title={video.title}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
@@ -31,7 +38,7 @@ export default function VideoEmbed({ video }: VideoEmbedProps) {
           >
             {/* Thumbnail */}
             <img
-              src={thumbnailUrl}
+              src={thumbnailUrl!}
               alt={video.title}
               className="absolute inset-0 w-full h-full object-cover"
               loading="lazy"

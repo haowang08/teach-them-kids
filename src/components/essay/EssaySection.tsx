@@ -69,6 +69,7 @@ export default function EssaySection({ essay, topicId }: EssaySectionProps) {
           }}
           placeholder="Start writing your thoughts here..."
           rows={8}
+          maxLength={5000}
           className="w-full rounded-xl border-2 border-[var(--topic-bronze)]/30 bg-white px-4 py-3 text-base text-[var(--topic-dark-brown)] leading-relaxed placeholder:text-[var(--topic-bronze)]/40 focus:outline-none focus:border-[var(--topic-gold)] focus:ring-2 focus:ring-[var(--topic-gold)]/20 resize-y"
         />
 
