@@ -144,7 +144,7 @@ export interface Reward {
   description: string;
   lockMessage: string;
   requirements: RewardRequirement[];
-  type: 'sketchfab' | 'chariot-race';
+  type: 'sketchfab' | 'chariot-race' | 'royal-road-messenger' | 'fireworks-designer' | 'quipu-code-breaker' | 'gold-caravan';
   embedUrl?: string;
   embedTitle?: string;
   celebrationMessage: string;

@@ -6,6 +6,10 @@ import { useProgress } from '../../hooks/useProgress';
 import { useSound } from '../../hooks/useSound';
 import SketchfabEmbed from './SketchfabEmbed';
 import ChariotRace from './ChariotRace';
+import RoyalRoadMessenger from './RoyalRoadMessenger';
+import FireworksDesigner from './FireworksDesigner';
+import QuipuCodeBreaker from './QuipuCodeBreaker';
+import GoldCaravan from './GoldCaravan';
 import ConfettiEffect from '../common/ConfettiEffect';
 
 interface RewardSectionProps {
@@ -136,6 +140,22 @@ export default function RewardSection({ reward, topicId }: RewardSectionProps) {
 
             {reward.type === 'chariot-race' && (
               <ChariotRace />
+            )}
+
+            {reward.type === 'royal-road-messenger' && (
+              <RoyalRoadMessenger />
+            )}
+
+            {reward.type === 'fireworks-designer' && (
+              <FireworksDesigner />
+            )}
+
+            {reward.type === 'quipu-code-breaker' && (
+              <QuipuCodeBreaker />
+            )}
+
+            {reward.type === 'gold-caravan' && (
+              <GoldCaravan />
             )}
           </div>
         ) : (
