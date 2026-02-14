@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getGameBySlug } from '../../data/gameRegistry';
 import { useBasicsProgress } from '../../hooks/useBasicsProgress';
 
+const FONT = "'Fredoka', 'Nunito', system-ui, sans-serif";
+
 type GameComponentType = React.LazyExoticComponent<React.ComponentType<{ level: number; onComplete: (accuracy: number) => void; onBack: () => void }>>;
 
 const GAME_COMPONENTS: Record<string, GameComponentType> = {
@@ -49,7 +51,7 @@ export default function GameShell() {
 
   if (!game) {
     return (
-      <div style={{ padding: 40, textAlign: 'center', color: '#FFFFFF', fontFamily: "'Comic Sans MS', cursive" }}>
+      <div style={{ padding: 40, textAlign: 'center', color: '#FFFFFF', fontFamily: FONT }}>
         <div style={{ fontSize: '3rem', marginBottom: 16 }}>{'\uD83E\uDD14'}</div>
         <h2>Game not found!</h2>
         <button onClick={() => navigate('/basics')} style={backBtnStyle}>Back to Games</button>
@@ -68,12 +70,13 @@ export default function GameShell() {
         <div style={{ textAlign: 'center', marginTop: 12, marginBottom: 20 }}>
           <div style={{ fontSize: '3.5rem', marginBottom: 8 }}>{game.icon}</div>
           <h2 style={{
-            fontFamily: "'Comic Sans MS', 'Chalkboard SE', cursive",
-            fontSize: '1.6rem',
+            fontFamily: FONT,
+            fontSize: '2rem',
+            fontWeight: 800,
             color: '#FFFFFF',
             margin: '0 0 4px',
           }}>{game.name}</h2>
-          <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', margin: 0 }}>{game.description}</p>
+          <p style={{ fontSize: '1rem', fontWeight: 600, fontFamily: FONT, color: 'rgba(255,255,255,0.6)', margin: 0 }}>{game.description}</p>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -93,7 +96,7 @@ export default function GameShell() {
                   padding: '14px 18px',
                   cursor: locked ? 'default' : 'pointer',
                   opacity: locked ? 0.4 : 1,
-                  fontFamily: "'Comic Sans MS', cursive",
+                  fontFamily: FONT,
                   color: '#FFFFFF',
                   textAlign: 'left',
                   display: 'flex',
@@ -105,10 +108,10 @@ export default function GameShell() {
                 onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
               >
                 <div>
-                  <div style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>
+                  <div style={{ fontSize: '1.3rem', fontWeight: 700 }}>
                     {locked ? '\uD83D\uDD12' : ''} Level {lvl.level}: {lvl.name}
                   </div>
-                  <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>
+                  <div style={{ fontSize: '1rem', fontWeight: 600, color: 'rgba(255,255,255,0.5)', marginTop: 2 }}>
                     {lvl.description}
                   </div>
                 </div>
@@ -130,8 +133,9 @@ export default function GameShell() {
             background: 'rgba(255,255,255,0.05)',
             borderRadius: 12,
             color: 'rgba(255,255,255,0.5)',
-            fontSize: '0.8rem',
-            fontFamily: "'Comic Sans MS', cursive",
+            fontSize: '0.9rem',
+            fontWeight: 600,
+            fontFamily: FONT,
           }}>
             {'\uD83D\uDEA7'} This game is coming soon!
           </div>
@@ -144,7 +148,7 @@ export default function GameShell() {
   return (
     <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
       <Suspense fallback={
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#FFFFFF', fontFamily: "'Comic Sans MS', cursive", fontSize: '1.2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#FFFFFF', fontFamily: FONT, fontSize: '1.3rem', fontWeight: 700 }}>
           Loading game...
         </div>
       }>
@@ -160,7 +164,8 @@ const backBtnStyle: React.CSSProperties = {
   borderRadius: 8,
   padding: '6px 14px',
   color: 'rgba(255,255,255,0.7)',
-  fontSize: '0.8rem',
+  fontSize: '0.9rem',
+  fontWeight: 700,
   cursor: 'pointer',
-  fontFamily: "'Comic Sans MS', cursive",
+  fontFamily: "'Fredoka', 'Nunito', system-ui, sans-serif",
 };

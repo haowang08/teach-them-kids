@@ -49,10 +49,10 @@ function getDistractorLetters(word: string, count: number): string[] {
 
 function getWordList(level: number): { word: string; image: string }[] {
   switch (level) {
-    case 1: return CVC_WORDS;
-    case 2: return CCVC_WORDS;
-    case 3: return CVCC_WORDS;
-    case 4: return CVCE_WORDS;
+    case 0: return CVC_WORDS;
+    case 1: return CCVC_WORDS;
+    case 2: return CVCC_WORDS;
+    case 3: return CVCE_WORDS;
     default: return CVC_WORDS;
   }
 }

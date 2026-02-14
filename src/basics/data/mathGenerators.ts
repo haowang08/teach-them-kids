@@ -76,10 +76,10 @@ function makeProblem(
 /** Return [min, max] sum range for addition/subtraction levels. */
 function addSubRange(level: number): [number, number] {
   switch (level) {
-    case 1: return [1, 5];
-    case 2: return [1, 10];
-    case 3: return [1, 15];
-    case 4: return [1, 20];
+    case 0: return [1, 5];
+    case 1: return [1, 10];
+    case 2: return [1, 15];
+    case 3: return [1, 20];
     default: return [1, 10];
   }
 }
@@ -87,10 +87,10 @@ function addSubRange(level: number): [number, number] {
 /** Return the multiplier range [lo, hi] for multiplication/division levels. */
 function mulDivFactors(level: number): [number, number] {
   switch (level) {
-    case 1: return [2, 3];
-    case 2: return [4, 5];
-    case 3: return [6, 7];
-    case 4: return [8, 9];
+    case 0: return [2, 3];
+    case 1: return [4, 5];
+    case 2: return [6, 7];
+    case 3: return [8, 9];
     default: return [2, 3];
   }
 }
@@ -127,15 +127,15 @@ export function generateMixed(level: number, count: number = 10): MathProblem[] 
   const problems: MathProblem[] = [];
   const half = Math.ceil(count / 2);
 
-  // Level 1: bridging 10 (sums that cross 10)
-  // Level 2: teen + single digit
-  // Level 3: within 20
-  // Level 4: mixed +/-
+  // Level 0: bridging 10 (sums that cross 10)
+  // Level 1: teen + single digit
+  // Level 2: within 20
+  // Level 3: mixed +/-
   for (let i = 0; i < count; i++) {
     const doAdd = i < half || Math.random() < 0.5;
 
     switch (level) {
-      case 1: {
+      case 0: {
         // Bridging 10
         if (doAdd) {
           const a = randInt(6, 9);
@@ -150,7 +150,7 @@ export function generateMixed(level: number, count: number = 10): MathProblem[] 
         }
         break;
       }
-      case 2: {
+      case 1: {
         // Teens + single
         const a = randInt(10, 15);
         const b = randInt(1, 5);
@@ -161,7 +161,7 @@ export function generateMixed(level: number, count: number = 10): MathProblem[] 
         }
         break;
       }
-      case 3: {
+      case 2: {
         // Within 20
         if (doAdd) {
           const a = randInt(1, 15);
@@ -175,7 +175,7 @@ export function generateMixed(level: number, count: number = 10): MathProblem[] 
         break;
       }
       default: {
-        // Level 4: fully mixed +/- within 20
+        // Level 3: fully mixed +/- within 20
         if (doAdd) {
           const a = randInt(1, 15);
           const b = randInt(1, 20 - a);
@@ -232,15 +232,15 @@ export function generateAllOps(level: number, count: number = 10): MathProblem[]
     // Decide which operation based on level
     let opChoice: number;
     switch (level) {
-      case 1:
+      case 0:
         // +/- only
         opChoice = randInt(0, 1);
         break;
-      case 2:
+      case 1:
         // +, -, x
         opChoice = randInt(0, 2);
         break;
-      case 3:
+      case 2:
         // +, -, x, /
         opChoice = randInt(0, 3);
         break;

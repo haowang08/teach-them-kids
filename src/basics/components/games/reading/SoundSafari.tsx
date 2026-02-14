@@ -53,10 +53,10 @@ function getPhonemePool(level: number): PhonemeEntry[] {
   );
 
   switch (level) {
-    case 1: return consonants;
-    case 2: return digraphs;
-    case 3: return blends;
-    case 4: return [...consonants, ...digraphs, ...blends];
+    case 0: return consonants;
+    case 1: return digraphs;
+    case 2: return blends;
+    case 3: return [...consonants, ...digraphs, ...blends];
     default: return consonants;
   }
 }

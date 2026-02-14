@@ -389,7 +389,7 @@ export default function MultiplicationMeadow(props: BasicsGameProps) {
   const audio = useGameAudio();
 
   // Generate all problems upfront for this session
-  const problems = useMemo(() => generateMultiplication(level + 1, TOTAL_ROUNDS), [level]);
+  const problems = useMemo(() => generateMultiplication(level, TOTAL_ROUNDS), [level]);
   const currentProblem = problems[game.round - 1] as MathProblem | undefined;
 
   const [wrongIndex, setWrongIndex] = useState<number | null>(null);

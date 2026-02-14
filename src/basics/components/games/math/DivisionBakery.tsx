@@ -433,7 +433,7 @@ export default function DivisionBakery(props: BasicsGameProps) {
   const audio = useGameAudio();
 
   // Generate all problems upfront
-  const problems = useMemo(() => generateDivision(level + 1, TOTAL_ROUNDS), [level]);
+  const problems = useMemo(() => generateDivision(level, TOTAL_ROUNDS), [level]);
   const currentProblem = problems[game.round - 1] as MathProblem | undefined;
 
   const [wrongIndex, setWrongIndex] = useState<number | null>(null);

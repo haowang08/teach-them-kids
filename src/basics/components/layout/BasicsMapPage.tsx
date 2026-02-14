@@ -3,6 +3,8 @@ import { GAMES } from '../../data/gameRegistry';
 import { useBasicsProgress } from '../../hooks/useBasicsProgress';
 import GameCard from './GameCard';
 
+const FONT = "'Fredoka', 'Nunito', system-ui, sans-serif";
+
 export default function BasicsMapPage() {
   const navigate = useNavigate();
   const { progress } = useBasicsProgress();
@@ -18,15 +20,18 @@ export default function BasicsMapPage() {
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
         <div style={{ fontSize: '2.5rem', marginBottom: 4 }}>{'\uD83C\uDF1F'}</div>
         <h1 style={{
-          fontFamily: "'Comic Sans MS', 'Chalkboard SE', cursive",
-          fontSize: 'clamp(1.5rem, 5vw, 2.2rem)',
+          fontFamily: FONT,
+          fontSize: 'clamp(1.8rem, 5vw, 2.4rem)',
+          fontWeight: 800,
           color: '#FFFFFF',
           margin: '0 0 6px 0',
         }}>
           Curious Kids
         </h1>
         <div style={{
-          fontSize: '0.85rem',
+          fontFamily: FONT,
+          fontSize: '1rem',
+          fontWeight: 700,
           color: 'rgba(255,255,255,0.6)',
           marginBottom: 8,
         }}>
@@ -40,9 +45,10 @@ export default function BasicsMapPage() {
             borderRadius: 8,
             padding: '6px 16px',
             color: 'rgba(255,255,255,0.7)',
-            fontSize: '0.75rem',
+            fontSize: '0.85rem',
+            fontWeight: 700,
             cursor: 'pointer',
-            fontFamily: 'inherit',
+            fontFamily: FONT,
           }}
         >
           {'\u2190'} Back to Main
@@ -52,8 +58,9 @@ export default function BasicsMapPage() {
       {/* Reading row */}
       <div style={{ marginBottom: 28 }}>
         <h2 style={{
-          fontFamily: "'Comic Sans MS', 'Chalkboard SE', cursive",
-          fontSize: '1.1rem',
+          fontFamily: FONT,
+          fontSize: '1.6rem',
+          fontWeight: 800,
           color: '#81D4FA',
           marginBottom: 12,
           paddingLeft: 8,
@@ -82,8 +89,9 @@ export default function BasicsMapPage() {
       {/* Math row */}
       <div>
         <h2 style={{
-          fontFamily: "'Comic Sans MS', 'Chalkboard SE', cursive",
-          fontSize: '1.1rem',
+          fontFamily: FONT,
+          fontSize: '1.6rem',
+          fontWeight: 800,
           color: '#A5D6A7',
           marginBottom: 12,
           paddingLeft: 8,

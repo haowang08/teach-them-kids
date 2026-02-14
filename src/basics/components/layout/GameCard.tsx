@@ -1,5 +1,7 @@
 import type { GameMeta, GameProgress } from '../../types';
 
+const FONT = "'Fredoka', 'Nunito', system-ui, sans-serif";
+
 interface GameCardProps {
   game: GameMeta;
   progress?: GameProgress;
@@ -20,11 +22,11 @@ export default function GameCard({ game, progress, onClick }: GameCardProps) {
         background: `linear-gradient(145deg, ${game.color}22, ${game.color}44)`,
         border: `3px solid ${game.color}88`,
         borderRadius: 20,
-        padding: '20px 16px',
-        minWidth: 200,
-        maxWidth: 220,
+        padding: '22px 18px',
+        minWidth: 260,
+        maxWidth: 300,
         cursor: 'pointer',
-        fontFamily: "'Comic Sans MS', 'Chalkboard SE', cursive",
+        fontFamily: FONT,
         color: '#FFFFFF',
         textAlign: 'center',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
@@ -41,8 +43,8 @@ export default function GameCard({ game, progress, onClick }: GameCardProps) {
       }}
     >
       <div style={{ fontSize: '3rem', marginBottom: 8 }}>{game.icon}</div>
-      <div style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: 4 }}>{game.name}</div>
-      <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', marginBottom: 10, lineHeight: 1.4 }}>
+      <div style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: 4 }}>{game.name}</div>
+      <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)', marginBottom: 10, lineHeight: 1.4 }}>
         {game.description}
       </div>
 
@@ -57,7 +59,8 @@ export default function GameCard({ game, progress, onClick }: GameCardProps) {
 
       {/* Level badge */}
       <div style={{
-        fontSize: '0.65rem',
+        fontSize: '0.8rem',
+        fontWeight: 700,
         background: 'rgba(255,255,255,0.15)',
         borderRadius: 8,
         padding: '3px 8px',
@@ -68,7 +71,8 @@ export default function GameCard({ game, progress, onClick }: GameCardProps) {
 
       {/* Category badge */}
       <div style={{
-        fontSize: '0.6rem',
+        fontSize: '0.75rem',
+        fontWeight: 700,
         marginTop: 6,
         color: game.category === 'reading' ? '#81D4FA' : '#A5D6A7',
         textTransform: 'uppercase',
