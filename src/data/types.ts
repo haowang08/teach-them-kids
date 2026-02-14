@@ -171,7 +171,14 @@ export interface Reward {
     | 'virtual-clay-studio'
     | 'rhythm-timeline'
     | 'pizza-world-tour' | 'ice-cream-factory' | 'pickle-maker'
-    | 'temple-builder';
+    | 'temple-builder'
+    | 'barter-town-builder'
+    | 'kid-biz-tycoon'
+    | 'smart-shopper-challenge'
+    | 'compound-growth-garden'
+    | 'bank-manager-sim'
+    | 'kindness-ripple'
+    | 'piggy-bank-planner';
   embedUrl?: string;
   embedTitle?: string;
   celebrationMessage: string;

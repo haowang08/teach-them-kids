@@ -1037,6 +1037,155 @@ export const khmerEmpireTheme: TopicTheme = {
     'linear-gradient(90deg, #C9A227, #2E5339, #C9A227)',
 };
 
+// ─── Money Matters themes ─────────────────────────────────────────
+
+export const whatIsMoneyTheme: TopicTheme = {
+  id: 'what-is-money',
+  colors: {
+    gold: '#D4A017',
+    primary: '#2E7D32',
+    secondary: '#43A047',
+    cream: '#FFF8E1',
+    accent: '#FFB300',
+    darkBrown: '#1B5E20',
+    sand: '#E8F5E9',
+    bronze: '#CD7F32',
+    goldLight: '#FFF9C4',
+  },
+  heroGradient:
+    'linear-gradient(180deg, rgba(46, 125, 50, 0.95) 0%, rgba(67, 160, 71, 0.85) 50%, rgba(212, 160, 23, 0.9) 100%)',
+  navGradient:
+    'linear-gradient(90deg, #2E7D32, #43A047, #2E7D32)',
+  sectionBorderGradient:
+    'linear-gradient(90deg, #D4A017, #2E7D32, #D4A017)',
+};
+
+export const savingAndBudgetingTheme: TopicTheme = {
+  id: 'saving-and-budgeting',
+  colors: {
+    gold: '#D4A017',
+    primary: '#C2185B',
+    secondary: '#E91E63',
+    cream: '#FCE4EC',
+    accent: '#FFB300',
+    darkBrown: '#880E4F',
+    sand: '#F8BBD0',
+    bronze: '#CD7F32',
+    goldLight: '#FFF9C4',
+  },
+  heroGradient:
+    'linear-gradient(180deg, rgba(194, 24, 91, 0.95) 0%, rgba(233, 30, 99, 0.85) 50%, rgba(212, 160, 23, 0.9) 100%)',
+  navGradient:
+    'linear-gradient(90deg, #C2185B, #E91E63, #C2185B)',
+  sectionBorderGradient:
+    'linear-gradient(90deg, #D4A017, #C2185B, #D4A017)',
+};
+
+export const earningMoneyTheme: TopicTheme = {
+  id: 'earning-money',
+  colors: {
+    gold: '#D4A017',
+    primary: '#E65100',
+    secondary: '#FF9800',
+    cream: '#FFF3E0',
+    accent: '#4CAF50',
+    darkBrown: '#BF360C',
+    sand: '#FFE0B2',
+    bronze: '#CD7F32',
+    goldLight: '#FFF9C4',
+  },
+  heroGradient:
+    'linear-gradient(180deg, rgba(230, 81, 0, 0.95) 0%, rgba(255, 152, 0, 0.85) 50%, rgba(76, 175, 80, 0.9) 100%)',
+  navGradient:
+    'linear-gradient(90deg, #E65100, #FF9800, #E65100)',
+  sectionBorderGradient:
+    'linear-gradient(90deg, #D4A017, #E65100, #D4A017)',
+};
+
+export const spendingWiselyTheme: TopicTheme = {
+  id: 'spending-wisely',
+  colors: {
+    gold: '#D4A017',
+    primary: '#1565C0',
+    secondary: '#42A5F5',
+    cream: '#E3F2FD',
+    accent: '#FF9800',
+    darkBrown: '#0D47A1',
+    sand: '#BBDEFB',
+    bronze: '#CD7F32',
+    goldLight: '#FFF9C4',
+  },
+  heroGradient:
+    'linear-gradient(180deg, rgba(21, 101, 192, 0.95) 0%, rgba(66, 165, 245, 0.85) 50%, rgba(255, 152, 0, 0.9) 100%)',
+  navGradient:
+    'linear-gradient(90deg, #1565C0, #42A5F5, #1565C0)',
+  sectionBorderGradient:
+    'linear-gradient(90deg, #D4A017, #1565C0, #D4A017)',
+};
+
+export const investingBasicsTheme: TopicTheme = {
+  id: 'investing-basics',
+  colors: {
+    gold: '#D4A017',
+    primary: '#1B5E20',
+    secondary: '#388E3C',
+    cream: '#E8F5E9',
+    accent: '#FFD600',
+    darkBrown: '#0D3B13',
+    sand: '#C8E6C9',
+    bronze: '#CD7F32',
+    goldLight: '#FFF9C4',
+  },
+  heroGradient:
+    'linear-gradient(180deg, rgba(27, 94, 32, 0.95) 0%, rgba(56, 142, 60, 0.85) 50%, rgba(255, 214, 0, 0.9) 100%)',
+  navGradient:
+    'linear-gradient(90deg, #1B5E20, #388E3C, #1B5E20)',
+  sectionBorderGradient:
+    'linear-gradient(90deg, #D4A017, #1B5E20, #D4A017)',
+};
+
+export const banksHowTheyWorkTheme: TopicTheme = {
+  id: 'banks-how-they-work',
+  colors: {
+    gold: '#D4A017',
+    primary: '#283593',
+    secondary: '#3F51B5',
+    cream: '#E8EAF6',
+    accent: '#FFB300',
+    darkBrown: '#1A237E',
+    sand: '#C5CAE9',
+    bronze: '#CD7F32',
+    goldLight: '#FFF9C4',
+  },
+  heroGradient:
+    'linear-gradient(180deg, rgba(40, 53, 147, 0.95) 0%, rgba(63, 81, 181, 0.85) 50%, rgba(255, 179, 0, 0.9) 100%)',
+  navGradient:
+    'linear-gradient(90deg, #283593, #3F51B5, #283593)',
+  sectionBorderGradient:
+    'linear-gradient(90deg, #D4A017, #283593, #D4A017)',
+};
+
+export const givingAndSharingTheme: TopicTheme = {
+  id: 'giving-and-sharing',
+  colors: {
+    gold: '#D4A017',
+    primary: '#AD1457',
+    secondary: '#E91E63',
+    cream: '#FFF0F5',
+    accent: '#00BCD4',
+    darkBrown: '#880E4F',
+    sand: '#FCE4EC',
+    bronze: '#CD7F32',
+    goldLight: '#FFF9C4',
+  },
+  heroGradient:
+    'linear-gradient(180deg, rgba(173, 20, 87, 0.95) 0%, rgba(233, 30, 99, 0.85) 50%, rgba(0, 188, 212, 0.9) 100%)',
+  navGradient:
+    'linear-gradient(90deg, #AD1457, #E91E63, #AD1457)',
+  sectionBorderGradient:
+    'linear-gradient(90deg, #D4A017, #AD1457, #D4A017)',
+};
+
 export const themes: Record<string, TopicTheme> = {
   'ancient-egypt': ancientEgyptTheme,
   'ancient-rome': ancientRomeTheme,
@@ -1091,6 +1240,14 @@ export const themes: Record<string, TopicTheme> = {
   'feasts-festivals-food': feastsFestivalsFoodTheme,
   'dumplings-around-the-world': dumplingsAroundTheWorldTheme,
   'history-of-noodles': historyOfNoodlesTheme,
+  // Money Matters
+  'what-is-money': whatIsMoneyTheme,
+  'saving-and-budgeting': savingAndBudgetingTheme,
+  'earning-money': earningMoneyTheme,
+  'spending-wisely': spendingWiselyTheme,
+  'investing-basics': investingBasicsTheme,
+  'banks-how-they-work': banksHowTheyWorkTheme,
+  'giving-and-sharing': givingAndSharingTheme,
 };
 
 export function getTheme(themeId: string): TopicTheme | undefined {

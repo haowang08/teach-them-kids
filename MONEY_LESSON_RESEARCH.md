@@ -63,12 +63,14 @@
 **Reward Game: Barter Town Builder** — Trade goods in an ancient village using barter, then commodity money, then coins. Timer shows how each innovation speeds up trade. Players experience the "double coincidence of wants" problem firsthand.
 
 **YouTube Videos:**
-| # | Title | URL | Channel | Duration |
-|---|---|---|---|---|
-| 1 | The History of Money (From Barter to Bitcoin) | https://www.youtube.com/watch?v=YCN2aTlocOw | Be Smart (PBS) | ~12 min |
-| 2 | What Is Money? | https://www.youtube.com/watch?v=etC1BFRs3cA | Biz Kid$ | ~25 min |
-| 3 | Money and Making Change | https://www.youtube.com/watch?v=oa_wMXsNn80 | Rock 'N Learn | ~58 min |
-| 4 | The Money Song - USA Coins & Bills | https://www.youtube.com/watch?v=7QW5Qw81yIY | Scratch Garden | ~3 min |
+| # | Title | URL | Channel |
+|---|---|---|---|
+| 1 | The History of Money (From Barter to Bitcoin) | https://www.youtube.com/watch?v=YCN2aTlocOw | Be Smart (PBS) |
+| 2 | Who Invented Money? The History of Money | https://www.youtube.com/watch?v=GZ7y-yFdX9M | Peekaboo Kidz |
+| 3 | Making Change by Counting Up - Money Math | https://www.youtube.com/watch?v=Z2ejhmKHY3k | MooMooMath and Science |
+| 4 | The Money Song - USA Coins & Bills | https://www.youtube.com/watch?v=7QW5Qw81yIY | Scratch Garden |
+| 5 | Currencies Around The World | https://www.youtube.com/watch?v=bUzr9APgb4Q | Ailani's Little World |
+| 6 | Foreign Currency for Kids | https://www.youtube.com/watch?v=L3Ej3wr__w0 | Kids2GrownupsFinance |
 
 ---
 
@@ -101,12 +103,12 @@
 **Reward Game: Piggy Bank Planner** — Choose a savings goal, split weekly allowance into Save/Spend/Share jars, resist temptation pop-ups, and fill a visual savings thermometer. Includes random events (birthday money, unexpected expense) that teach adaptability.
 
 **YouTube Videos:**
-| # | Title | URL | Channel | Duration |
-|---|---|---|---|---|
-| 1 | For Me, For You, For Later | https://www.youtube.com/watch?v=VyXMoGGcdNI | Sesame Street | ~9 min |
-| 2 | CashVille Kidz Episode 1 | https://www.youtube.com/watch?v=Z6Smg5tJEOQ | CashVille Kidz | ~12 min |
-| 3 | How to Make a Budget for Kids | https://www.youtube.com/watch?v=sFY5kNB6HJk | Easy Peasy Finance | ~3 min |
-| 4 | Cha-Ching: Save It! | https://www.youtube.com/watch?v=pknIDZqcVHs | Cha-Ching | ~3 min |
+| # | Title | URL | Channel |
+|---|---|---|---|
+| 1 | Sesame Street's For Me, For You, For Later: Three Jars | https://www.youtube.com/watch?v=ZrsWh7Bo97A | Beth Kobliner |
+| 2 | Financial Literacy for Kids | https://www.youtube.com/watch?v=0iRbD5rM5qc | Learn Bright |
+| 3 | Financial Literacy: Needs and Wants | https://www.youtube.com/watch?v=aRcXutXvfmM | Learn Bright |
+| 4 | Financial Literacy: Borrowing vs. Saving | https://www.youtube.com/watch?v=c9VFbAJRSv0 | Learn Bright |
 
 ---
 
@@ -133,12 +135,13 @@
 **Reward Game: Kid Biz Tycoon** — Run a kid-friendly business (choose: lemonade stand, craft shop, dog walking, or lawn care). Set prices, manage supplies, handle random events (rainy day, bulk order, broken equipment), and invest profits in upgrades.
 
 **YouTube Videos:**
-| # | Title | URL | Channel | Duration |
-|---|---|---|---|---|
-| 1 | How Do You Get Money? | https://www.youtube.com/watch?v=YRPE2iJKoYw | Biz Kid$ | ~25 min |
-| 2 | Cha-Ching: Earn It! | https://www.youtube.com/watch?v=T0dGLhMYhJo | Cha-Ching | ~3 min |
-| 3 | What is Entrepreneurship? | https://www.youtube.com/watch?v=RlJTPU2M2GQ | Easy Peasy Finance | ~3 min |
-| 4 | Kid Entrepreneurs: Starting a Business | https://www.youtube.com/watch?v=O3jvVBq-TKU | Biz Kid$ | ~25 min |
+| # | Title | URL | Channel |
+|---|---|---|---|
+| 1 | Jobs I Can Have When I Grow Up | https://www.youtube.com/watch?v=-pVyrW_vwaw | Highlights Kids |
+| 2 | Money Tips for Kids: Ways to Make Money | https://www.youtube.com/watch?v=hQ6HGsxmtFI | Clearly Luminus |
+| 3 | Entrepreneurship for Kids | https://www.youtube.com/watch?v=73IetI9oG20 | — |
+| 4 | Kids Running Their Own Business | https://www.youtube.com/watch?v=zaOYxctwE-o | Behind the News |
+| 5 | A 12-year-old app developer (Thomas Suarez) | https://www.youtube.com/watch?v=Fkd9TWUtFm0 | TED |
 
 ---
 
@@ -165,12 +168,13 @@
 **Reward Game: Smart Shopper Challenge** — Shop on a budget in a virtual store. Distinguish needs from wants, compare prices across stores, resist flashy advertising pop-ups, and try to maximize value within your budget. Score based on how much of your "needs" list you fulfill while staying under budget.
 
 **YouTube Videos:**
-| # | Title | URL | Channel | Duration |
-|---|---|---|---|---|
-| 1 | Wants and Needs with Bert and Ernie | https://www.youtube.com/watch?v=c_MMAK8NSb0 | Sesame Street | ~4 min |
-| 2 | What Can You Do with Money? | https://www.youtube.com/watch?v=4p3GN18ZfXM | Biz Kid$ | ~25 min |
-| 3 | Cha-Ching: Spend It! | https://www.youtube.com/watch?v=_iGMKFksOaw | Cha-Ching | ~3 min |
-| 4 | Needs vs Wants for Kids | https://www.youtube.com/watch?v=K-SrCknOqUg | Easy Peasy Finance | ~3 min |
+| # | Title | URL | Channel |
+|---|---|---|---|
+| 1 | Needs & Wants Game | https://www.youtube.com/watch?v=9E2Myy58O04 | Marbles Kids Museum |
+| 2 | Why Do We Use Money | https://www.youtube.com/watch?v=WO3REcunyr0 | Toltol's Playlab |
+| 3 | Does More Money Equal More Happiness? | https://www.youtube.com/watch?v=D0slPLpCYFM | After Skool |
+| 4 | Can Money Buy Your Happiness? | https://www.youtube.com/watch?v=41RA_m2KHUU | TEDx Talks |
+| 5 | Would winning the lottery make you happier? | https://www.youtube.com/watch?v=juO4zxsjSjw | TED-Ed |
 
 ---
 
@@ -202,12 +206,12 @@
 **Reward Game: Compound Growth Garden** — Plant "money seeds" with different risk levels (safe savings = slow-growing flowers, stocks = faster trees that might wilt, bonds = steady shrubs). Watch them grow over simulated years. Branches grow their own branches to visualize compounding. Goal: grow the most valuable garden.
 
 **YouTube Videos:**
-| # | Title | URL | Channel | Duration |
-|---|---|---|---|---|
-| 1 | What is Investing? | https://www.youtube.com/watch?v=we_mSRFF-Wc | Easy Peasy Finance | ~3 min |
-| 2 | What is Compound Interest? | https://www.youtube.com/watch?v=nMVxNBJwbWU | Easy Peasy Finance | ~3 min |
-| 3 | Growing Money: Compound Interest | https://www.youtube.com/watch?v=G4LcoI6TjNg | Federal Reserve Education | ~5 min |
-| 4 | What is the Stock Market? | https://www.youtube.com/watch?v=p7HKvqRI_Bo | Easy Peasy Finance | ~3 min |
+| # | Title | URL | Channel |
+|---|---|---|---|
+| 1 | Human, Capital & Natural Resources for Kids | https://www.youtube.com/watch?v=b8uJQPo8yq0 | Kids Academy |
+| 2 | CashVille Kidz Episode 22: Saving vs Investing | https://www.youtube.com/watch?v=jBfqlsz6mAo | CashVilleKidz |
+| 3 | How does the stock market work? | https://www.youtube.com/watch?v=p7HKvqRI_Bo | TED-Ed |
+| 4 | What causes economic bubbles? | https://www.youtube.com/watch?v=I5ZR0jMlxX0 | TED-Ed |
 
 ---
 
@@ -234,12 +238,13 @@
 **Reward Game: Bank Manager Simulator** — Run a community bank for 12 simulated months. Accept deposits, approve/deny loan applications, set interest rates, maintain reserves, and keep customers happy. Balance risk and responsibility to earn the "Best Banker" award.
 
 **YouTube Videos:**
-| # | Title | URL | Channel | Duration |
-|---|---|---|---|---|
-| 1 | What is a Bank? | https://www.youtube.com/watch?v=yCbRjIlAw4E | Easy Peasy Finance | ~3 min |
-| 2 | How Banks Work | https://www.youtube.com/watch?v=jRGMJySzJHg | NatWest Thrive | ~4 min |
-| 3 | Money Moves | https://www.youtube.com/watch?v=rSb5LI7HpHU | Biz Kid$ | ~25 min |
-| 4 | What is a Bank Account? | https://www.youtube.com/watch?v=WHNmQgvMRsA | Easy Peasy Finance | ~3 min |
+| # | Title | URL | Channel |
+|---|---|---|---|
+| 1 | What is a Bank? Lessons in Money for Kids | https://www.youtube.com/watch?v=CqD3hnjZBTM | Chad Schiel |
+| 2 | How Does Money Travel Around The World? | https://www.youtube.com/watch?v=1asz-h_0TLg | Big Questions Quest |
+| 3 | What gives a dollar bill its value? | https://www.youtube.com/watch?v=XNu5ppFZbHo | TED-Ed |
+| 4 | Checking and Savings Accounts | https://www.youtube.com/watch?v=ScXAyGh0MRg | Learn Bright |
+| 5 | What is Crypto? Cryptocurrency for Kids | https://www.youtube.com/watch?v=EfKuZayeksI | Hey! Guess What |
 
 ---
 
@@ -266,12 +271,13 @@
 **Reward Game: Kindness Ripple Effect** — Players start with a "generosity budget" and a community map with people and places needing help. Each donation or volunteer action creates visible ripple animations that spread outward, triggering positive chain reactions. A happiness meter and community health score track impact.
 
 **YouTube Videos:**
-| # | Title | URL | Channel | Duration |
-|---|---|---|---|---|
-| 1 | Cha-Ching: Donate It! | https://www.youtube.com/watch?v=m6k_0bdBB50 | Cha-Ching | ~3 min |
-| 2 | For Me, For You, For Later | https://www.youtube.com/watch?v=VyXMoGGcdNI | Sesame Street | ~9 min |
-| 3 | Alex's Lemonade Stand Story | https://www.youtube.com/watch?v=mHWP-MOPFHA | ALSF | ~5 min |
-| 4 | Kindness Is My Superpower | https://www.youtube.com/watch?v=gPN-UYRau2M | Brightly Storytime | ~5 min |
+| # | Title | URL | Channel |
+|---|---|---|---|
+| 1 | Understanding Charities and Donations | https://www.youtube.com/watch?v=osCUTGkKVRg | Easy Peasy Finance |
+| 2 | Charitable Giving for Kids | https://www.youtube.com/watch?v=OQIKGUaXlRo | Twinkl USA |
+| 3 | The Story of Alex's Lemonade Stand Foundation | https://www.youtube.com/watch?v=vbpFASNKe28 | ALSF |
+| 4 | How Kids Change the World - Ryan Hickman | https://www.youtube.com/watch?v=JicGbdUtMJg | National Theatre for Children |
+| 5 | How to Start Your Own Charity | https://www.youtube.com/watch?v=XQdekLt7Tw8 | ICON Network |
 
 ---
 

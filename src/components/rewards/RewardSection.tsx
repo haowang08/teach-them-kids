@@ -54,6 +54,13 @@ const PizzaWorldTour = lazy(() => import('./PizzaWorldTour'));
 const IceCreamFactory = lazy(() => import('./IceCreamFactory'));
 const PickleMaker = lazy(() => import('./PickleMaker'));
 const TempleBuilder = lazy(() => import('./TempleBuilder'));
+const BarterTownBuilder = lazy(() => import('./BarterTownBuilder'));
+const PiggyBankPlanner = lazy(() => import('./PiggyBankPlanner'));
+const KidBizTycoon = lazy(() => import('./KidBizTycoon'));
+const SmartShopperChallenge = lazy(() => import('./SmartShopperChallenge'));
+const CompoundGrowthGarden = lazy(() => import('./CompoundGrowthGarden'));
+const BankManagerSim = lazy(() => import('./BankManagerSim'));
+const KindnessRipple = lazy(() => import('./KindnessRipple'));
 
 function RewardLoading() {
   return (
@@ -373,6 +380,34 @@ export default function RewardSection({ reward, topicId }: RewardSectionProps) {
 
             {reward.type === 'temple-builder' && (
               <TempleBuilder />
+            )}
+
+            {reward.type === 'barter-town-builder' && (
+              <BarterTownBuilder />
+            )}
+
+            {reward.type === 'piggy-bank-planner' && (
+              <PiggyBankPlanner />
+            )}
+
+            {reward.type === 'kid-biz-tycoon' && (
+              <KidBizTycoon />
+            )}
+
+            {reward.type === 'smart-shopper-challenge' && (
+              <SmartShopperChallenge />
+            )}
+
+            {reward.type === 'compound-growth-garden' && (
+              <CompoundGrowthGarden />
+            )}
+
+            {reward.type === 'bank-manager-sim' && (
+              <BankManagerSim />
+            )}
+
+            {reward.type === 'kindness-ripple' && (
+              <KindnessRipple />
             )}
           </div>
           </FullscreenWrapper>
