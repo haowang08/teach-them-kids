@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -39,12 +39,21 @@ export interface UseGameStateReturn {
 /**
  * State-machine hook managing game phases:
  *   intro -> playing -> feedback -> playing -> ... -> complete
+ *
+ * Uses refs for phase/round so that submitAnswer and nextRound
+ * always read the latest values even when called from setTimeout.
  */
 export function useGameState(totalRounds: number): UseGameStateReturn {
   const [phase, setPhase] = useState<GamePhase>('intro');
   const [round, setRound] = useState(1);
   const [score, setScore] = useState(0);
   const [answered, setAnswered] = useState(0);
+
+  // Refs to avoid stale closures in setTimeout callbacks
+  const phaseRef = useRef(phase);
+  phaseRef.current = phase;
+  const roundRef = useRef(round);
+  roundRef.current = round;
 
   const accuracy = useMemo(
     () => (answered > 0 ? Math.round((score / answered) * 100) : 0),
@@ -60,7 +69,7 @@ export function useGameState(totalRounds: number): UseGameStateReturn {
 
   const submitAnswer = useCallback(
     (correct: boolean) => {
-      if (phase !== 'playing') return;
+      if (phaseRef.current !== 'playing') return;
 
       setAnswered((prev) => prev + 1);
       if (correct) {
@@ -68,20 +77,19 @@ export function useGameState(totalRounds: number): UseGameStateReturn {
       }
       setPhase('feedback');
     },
-    [phase],
+    [],
   );
 
   const nextRound = useCallback(() => {
-    if (phase !== 'feedback') return;
+    if (phaseRef.current !== 'feedback') return;
 
-    if (round >= totalRounds) {
-      // All rounds done
+    if (roundRef.current >= totalRounds) {
       setPhase('complete');
     } else {
       setRound((prev) => prev + 1);
       setPhase('playing');
     }
-  }, [phase, round, totalRounds]);
+  }, [totalRounds]);
 
   return {
     phase,
