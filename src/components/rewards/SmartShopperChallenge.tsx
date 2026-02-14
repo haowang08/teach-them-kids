@@ -81,9 +81,10 @@ export default function SmartShopperChallenge() {
   const allNeedsBought = needs.every((n) => cart.some((c) => c.id === n.id));
   const inCart = useCallback((id: number) => cart.some((c) => c.id === id), [cart]);
 
-  const maybeShowAd = useCallback(() => {
+  const maybeShowAd = useCallback((cartIds: Set<number>) => {
     if (Math.random() < 0.4) {
-      const wants = STORE_ITEMS.filter((i) => i.category === "want");
+      const wants = STORE_ITEMS.filter((i) => i.category === "want" && !cartIds.has(i.id));
+      if (wants.length === 0) return;
       const item = wants[Math.floor(Math.random() * wants.length)];
       setAdPopup({
         item, discount: Math.floor(item.price * 0.3),
@@ -96,8 +97,10 @@ export default function SmartShopperChallenge() {
   const addToCart = useCallback((item: StoreItem) => {
     if (inCart(item.id) || cartTotal + price(item) > BUDGET) return;
     setCart((prev) => [...prev, item]);
-    maybeShowAd();
-  }, [inCart, cartTotal, maybeShowAd]);
+    const cartIds = new Set(cart.map((c) => c.id));
+    cartIds.add(item.id);
+    maybeShowAd(cartIds);
+  }, [inCart, cart, cartTotal, maybeShowAd]);
 
   const removeFromCart = useCallback((id: number) => {
     setCart((prev) => prev.filter((c) => c.id !== id));
@@ -116,7 +119,7 @@ export default function SmartShopperChallenge() {
 
   const calcScore = useCallback(() => {
     const s = needsInCart.length * 15 + Math.max(0, remaining) + adsResisted * 5 - wantsInCart.length * 3;
-    return Math.min(100, s);
+    return Math.max(0, Math.min(100, s));
   }, [needsInCart, remaining, adsResisted, wantsInCart]);
 
   const stars = (() => { const s = calcScore(); return s >= 90 ? 3 : s >= 70 ? 2 : s >= 40 ? 1 : 0; })();

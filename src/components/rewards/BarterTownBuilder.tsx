@@ -50,9 +50,9 @@ const ITEMS = [
 
 const COIN_PRICES: Record<string, number> = {
   Chicken: 3,
-  Wheat: 2,
-  Pottery: 5,
-  Cloth: 4,
+  Wheat: 3,
+  Pottery: 3,
+  Cloth: 3,
 };
 
 const PHASE_LABELS: Record<GamePhase, string> = {
@@ -171,8 +171,12 @@ export default function BarterTownBuilder() {
     setCommodityDays(0);
     setCoinDays(0);
     setMessage('');
+    setMessageType('info');
     setShells({});
     setWallets({});
+    setCommodityStep('sell');
+    setCoinsStep('sell');
+    setFadeIn(true);
   }, []);
 
   // ----------------------------------------

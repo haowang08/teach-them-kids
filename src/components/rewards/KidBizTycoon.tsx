@@ -71,6 +71,7 @@ export default function KidBizTycoon() {
   const [weather, setWeather] = useState(WEATHERS[0]);
   const [event, setEvent] = useState<{ text: string; effect: number } | null>(null);
   const [animateCash, setAnimateCash] = useState(false);
+  const [daySpent, setDaySpent] = useState(0);
 
   const generateWeather = useCallback((d: number) => {
     const r = seededRandom(d * 17 + 42);
@@ -90,6 +91,7 @@ export default function KidBizTycoon() {
 
   const handleBuySupplies = useCallback(() => {
     if (cartCost > cash) return;
+    setDaySpent(prev => prev + cartCost);
     setCash(prev => prev - cartCost);
     setSupplies(prev => ({
       lemons: prev.lemons + cart.lemons * 10,
@@ -112,7 +114,7 @@ export default function KidBizTycoon() {
     const maxFromCups = supplies.cups;
     const canServe = Math.min(customers, maxFromLemons, maxFromSugar, maxFromCups);
     const revenue = canServe * price;
-    const dayCosts = cartCost;
+    const dayCosts = daySpent;
     const profit = revenue - dayCosts;
 
     setSupplies(prev => ({
@@ -139,7 +141,7 @@ export default function KidBizTycoon() {
     setTodayResult(result);
     setResults(prev => [...prev, result]);
     setDailyStep('result');
-  }, [location, weather, event, price, supplies, day, cartCost]);
+  }, [location, weather, event, price, supplies, day, daySpent]);
 
   const handleNextDay = useCallback(() => {
     if (day >= TOTAL_DAYS) {
@@ -150,6 +152,7 @@ export default function KidBizTycoon() {
     setDailyStep('price');
     setTodayResult(null);
     setCart({ lemons: 0, sugar: 0, cups: 0 });
+    setDaySpent(0);
     const nextDay = day + 1;
     setWeather(generateWeather(nextDay));
     setEvent(generateEvent(nextDay));
@@ -160,6 +163,7 @@ export default function KidBizTycoon() {
     const ev = generateEvent(1);
     setWeather(w);
     setEvent(ev);
+    setDaySpent(0);
     setDailyStep('price');
     setPhase('daily');
   }, [generateWeather, generateEvent]);
@@ -550,6 +554,7 @@ export default function KidBizTycoon() {
           setPrice(1.0);
           setSupplies({ lemons: 0, sugar: 0, cups: 0 });
           setCart({ lemons: 0, sugar: 0, cups: 0 });
+          setDaySpent(0);
           setResults([]);
           setTodayResult(null);
           setDailyStep('price');

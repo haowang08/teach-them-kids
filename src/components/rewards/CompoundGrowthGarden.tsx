@@ -156,6 +156,7 @@ export default function CompoundGrowthGarden() {
   const [yearEvents, setYearEvents] = useState<YearEvent[]>([]);
   const [yearLog, setYearLog] = useState<string[]>([]);
   const [allFlowersValues, setAllFlowersValues] = useState(STARTING_MONEY);
+  const [amountInvested, setAmountInvested] = useState(STARTING_MONEY);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const totalAllocated = Object.values(allocations).reduce((a, b) => a + b, 0);
@@ -166,12 +167,13 @@ export default function CompoundGrowthGarden() {
         const current = prev[plantId];
         const newVal = Math.max(0, Math.min(STARTING_MONEY, current + delta));
         const diff = newVal - current;
-        const otherTotal = totalAllocated - current;
+        const prevTotal = Object.values(prev).reduce((a, b) => a + b, 0);
+        const otherTotal = prevTotal - current;
         if (otherTotal + newVal > STARTING_MONEY && diff > 0) return prev;
         return { ...prev, [plantId]: newVal };
       });
     },
-    [totalAllocated]
+    []
   );
 
   const startGrowing = useCallback(() => {
@@ -181,7 +183,8 @@ export default function CompoundGrowthGarden() {
       trees: allocations.trees,
       sunflowers: allocations.sunflowers,
     });
-    setAllFlowersValues(STARTING_MONEY);
+    setAllFlowersValues(totalAllocated);
+    setAmountInvested(totalAllocated);
     setYear(0);
     setYearEvents([]);
     setYearLog([]);
@@ -235,6 +238,7 @@ export default function CompoundGrowthGarden() {
     setYearEvents([]);
     setYearLog([]);
     setAllFlowersValues(STARTING_MONEY);
+    setAmountInvested(STARTING_MONEY);
     setIsAnimating(false);
   }, []);
 
@@ -480,8 +484,8 @@ export default function CompoundGrowthGarden() {
           <div style={{ color: COLORS.gold, fontSize: 28, fontWeight: 800, animation: isAnimating ? "pulse 0.5s ease-in-out" : undefined }}>
             ${totalValue.toFixed(2)}
           </div>
-          <div style={{ color: totalValue >= STARTING_MONEY ? COLORS.green : COLORS.red, fontSize: 13 }}>
-            {totalValue >= STARTING_MONEY ? "+" : ""}{((totalValue - STARTING_MONEY) / STARTING_MONEY * 100).toFixed(1)}% from start
+          <div style={{ color: totalValue >= amountInvested ? COLORS.green : COLORS.red, fontSize: 13 }}>
+            {totalValue >= amountInvested ? "+" : ""}{amountInvested > 0 ? ((totalValue - amountInvested) / amountInvested * 100).toFixed(1) : "0.0"}% from start
           </div>
         </div>
 
@@ -531,8 +535,8 @@ export default function CompoundGrowthGarden() {
   };
 
   const renderComplete = () => {
-    const gain = totalValue - STARTING_MONEY;
-    const gainPct = ((gain / STARTING_MONEY) * 100).toFixed(1);
+    const gain = totalValue - amountInvested;
+    const gainPct = amountInvested > 0 ? ((gain / amountInvested) * 100).toFixed(1) : "0.0";
     const allFlowersFinal = allFlowersValues;
     const diff = totalValue - allFlowersFinal;
 
@@ -574,7 +578,7 @@ export default function CompoundGrowthGarden() {
             {"\u{1F4CA}"} Comparison
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 13 }}>
-            <span style={{ color: COLORS.dimText }}>If all in Safe Flowers (3%):</span>
+            <span style={{ color: COLORS.dimText }}>If all ${amountInvested} in Safe Flowers (3%):</span>
             <span style={{ color: COLORS.blue, fontWeight: 700 }}>${allFlowersFinal.toFixed(2)}</span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>

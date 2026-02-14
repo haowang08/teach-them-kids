@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 // ============================================
 // TYPES & DATA
@@ -60,6 +60,8 @@ export default function PiggyBankPlanner() {
   const [tempt, setTempt] = useState<Tempt | null>(null);
   const [log, setLog] = useState<string[]>([]);
   const [used, setUsed] = useState<number[]>([]);
+  const [usedTempts, setUsedTempts] = useState<number[]>([]);
+  const confirming = useRef(false);
 
   const advance = useCallback((w: number) => {
     if (w >= WEEKS) setPhase("complete");
@@ -79,7 +81,17 @@ export default function PiggyBankPlanner() {
     });
   }, []);
 
+  const pickTemptation = useCallback(() => {
+    const avail = TEMPTS.filter((_, i) => !usedTempts.includes(i));
+    const pool = avail.length ? avail : TEMPTS;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    setUsedTempts(p => [...p, TEMPTS.indexOf(pick)]);
+    return pick;
+  }, [usedTempts]);
+
   const confirmWeek = useCallback(() => {
+    if (confirming.current) return;
+    confirming.current = true;
     setJars(p => ({ save: p.save + alloc.save, spend: p.spend + alloc.spend, share: p.share + alloc.share }));
     setLog(p => [...p, `Week ${week}: Saved $${alloc.save}, Spent $${alloc.spend}, Shared $${alloc.share}`]);
     if (EVENT_WKS.includes(week)) {
@@ -87,25 +99,27 @@ export default function PiggyBankPlanner() {
       if (avail.length) {
         const pick = avail[Math.floor(Math.random() * avail.length)];
         setUsed(p => [...p, EVENTS.indexOf(pick)]);
-        setEvt(pick); setPhase("event"); return;
+        setEvt(pick); setPhase("event"); confirming.current = false; return;
       }
     }
-    if (TEMPT_WKS.includes(week)) { setTempt(TEMPTS[Math.floor(Math.random() * TEMPTS.length)]); setPhase("temptation"); return; }
+    if (TEMPT_WKS.includes(week)) { setTempt(pickTemptation()); setPhase("temptation"); confirming.current = false; return; }
     if (week >= WEEKS) setPhase("complete"); else { setWeek(w => w + 1); setAlloc({ save: 5, spend: 5, share: 5 }); }
-  }, [alloc, week, used]);
+    confirming.current = false;
+  }, [alloc, week, used, pickTemptation]);
 
   const handleEvt = useCallback((chosen?: JarKey) => {
     if (!evt) return;
     setJars(p => {
       const u = { ...p };
-      if (evt.type === "bonus") u[evt.jar === "choose" ? (chosen || "save") : evt.jar] += evt.amount;
-      else u[evt.jar as JarKey] = Math.max(0, u[evt.jar as JarKey] - evt.amount);
+      const targetJar: JarKey = evt.jar === "choose" ? (chosen || "save") : evt.jar;
+      if (evt.type === "bonus") u[targetJar] += evt.amount;
+      else u[targetJar] = Math.max(0, u[targetJar] - evt.amount);
       return u;
     });
     setLog(p => [...p, `${evt.emoji} ${evt.text}`]); setEvt(null);
-    if (TEMPT_WKS.includes(week)) { setTempt(TEMPTS[Math.floor(Math.random() * TEMPTS.length)]); setPhase("temptation"); }
+    if (TEMPT_WKS.includes(week)) { setTempt(pickTemptation()); setPhase("temptation"); }
     else advance(week);
-  }, [evt, week, advance]);
+  }, [evt, week, advance, pickTemptation]);
 
   const handleTempt = useCallback((buy: boolean) => {
     if (!tempt) return;
@@ -116,7 +130,7 @@ export default function PiggyBankPlanner() {
 
   const reset = useCallback(() => {
     setPhase("intro"); setGoal(null); setWeek(1); setJars({ save: 0, spend: 0, share: 0 });
-    setAlloc({ save: 5, spend: 5, share: 5 }); setEvt(null); setTempt(null); setLog([]); setUsed([]);
+    setAlloc({ save: 5, spend: 5, share: 5 }); setEvt(null); setTempt(null); setLog([]); setUsed([]); setUsedTempts([]);
   }, []);
 
   // --- Shared renderers ---
@@ -173,7 +187,7 @@ export default function PiggyBankPlanner() {
       <div style={wrap}>
         <div style={{ maxWidth: 480, margin: "0 auto" }}>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: C.pink, margin: "0 0 12px", textAlign: "center" }}>{"\uD83D\uDC37"} Piggy Bank Planner</h1>
-          <ProgBar val={week} max={WEEKS} label={`Week ${week} of ${WEEKS}`} sub={`${Math.round((week / WEEKS) * 100)}%`} color1={C.blue} color2={C.gold} />
+          <ProgBar val={week - 1} max={WEEKS} label={`Week ${week} of ${WEEKS}`} sub={`${Math.round(((week - 1) / WEEKS) * 100)}%`} color1={C.blue} color2={C.gold} />
           {goal && <ProgBar val={jars.save} max={goal.cost} label={`${goal.emoji} Goal: ${goal.name}`} sub={`$${jars.save} / $${goal.cost}`} color1={jars.save >= goal.cost ? C.grn : C.pink} color2={C.gold} h={12} />}
           <div style={card}>
             <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
