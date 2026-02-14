@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getTopicBySlug, getLessonForTopic } from '../../data/curriculum';
+import type { Topic } from '../../data/types';
 import { useTheme } from '../../hooks/useTheme';
 import ScrollProgressBar from './ScrollProgressBar';
 import TopicHero from './TopicHero';
@@ -22,7 +23,31 @@ export default function TopicPage() {
     lessonSlug: string;
   }>();
 
-  const topic = topicSlug ? getTopicBySlug(topicSlug) : undefined;
+  const [topic, setTopic] = useState<Topic | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setTopic(undefined);
+
+    if (!topicSlug) {
+      setLoading(false);
+      return;
+    }
+
+    getTopicBySlug(topicSlug).then((loaded) => {
+      if (!cancelled) {
+        setTopic(loaded);
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [topicSlug]);
+
   const lesson = topic ? getLessonForTopic(topic.id) : undefined;
   const { theme, themeStyle } = useTheme(topic?.themeId ?? '');
 
@@ -30,6 +55,18 @@ export default function TopicPage() {
   useEffect(() => {
     window.scrollTo({ top: 0 });
   }, [topicSlug]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center px-4">
+          <div className="inline-block w-10 h-10 border-4 border-gray-300 border-t-yellow-500 rounded-full animate-spin mb-4" />
+          <p className="text-gray-500 text-lg font-semibold">Loading topic...</p>
+        </div>
+      </div>
+    );
+  }
 
   // 404
   if (!topic) {
@@ -63,7 +100,7 @@ export default function TopicPage() {
 
       <TopicNav items={topic.navItems} />
 
-      <ScoreTracker topicId={topic.id} />
+      <ScoreTracker topic={topic} />
 
       <div className="max-w-4xl mx-auto px-4">
         <BreadcrumbNav
@@ -71,6 +108,17 @@ export default function TopicPage() {
           lessonTitle={lesson?.title}
           topicTitle={topic.title}
         />
+
+        {/* Game unlock hint */}
+        {topic.reward && (
+          <div className="mb-6 px-4 py-3 rounded-xl bg-gradient-to-r from-[var(--topic-gold)]/20 to-[var(--topic-bronze)]/20 border border-[var(--topic-gold)]/30">
+            <p className="text-sm text-[var(--topic-dark-brown)] text-center font-medium">
+              <span className="mr-2">🎮</span>
+              Getting questions right and doing the essay unlocks a game!
+              <span className="ml-2">🎮</span>
+            </p>
+          </div>
+        )}
 
         {/* Content sections */}
         {topic.sections.map((section) => (

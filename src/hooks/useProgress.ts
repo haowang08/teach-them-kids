@@ -7,7 +7,7 @@ import {
   computeAccuracy,
   checkRewardUnlock,
 } from '../lib/progress';
-import { topics, lessons } from '../data/curriculum';
+import { topicMeta, lessons } from '../data/curriculum';
 
 export function useProgress() {
   const ctx = useContext(ProgressContext);
@@ -17,22 +17,22 @@ export function useProgress() {
 
   const getTopicCompletion = useCallback(
     (topicId: string): number => {
-      const topic = topics[topicId];
-      if (!topic) return 0;
-      return computeTopicCompletion(topicId, ctx.progress, topic);
+      const meta = topicMeta[topicId];
+      if (!meta) return 0;
+      return computeTopicCompletion(topicId, ctx.progress, meta);
     },
     [ctx.progress]
   );
 
   const getLessonCompletion = useCallback(
     (lessonId: string): number => {
-      return computeLessonCompletion(lessonId, ctx.progress, lessons, topics);
+      return computeLessonCompletion(lessonId, ctx.progress, lessons, topicMeta);
     },
     [ctx.progress]
   );
 
   const getCurriculumCompletion = useCallback((): number => {
-    return computeCurriculumCompletion(ctx.progress, lessons, topics);
+    return computeCurriculumCompletion(ctx.progress, lessons, topicMeta);
   }, [ctx.progress]);
 
   const getAccuracy = useCallback(
@@ -44,9 +44,9 @@ export function useProgress() {
 
   const isRewardUnlockable = useCallback(
     (topicId: string): boolean => {
-      const topic = topics[topicId];
-      if (!topic) return false;
-      return checkRewardUnlock(topicId, ctx.progress, topic);
+      const meta = topicMeta[topicId];
+      if (!meta) return false;
+      return checkRewardUnlock(topicId, ctx.progress, meta);
     },
     [ctx.progress]
   );

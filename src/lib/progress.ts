@@ -4,31 +4,36 @@ import type {
   Quiz,
   Topic,
   Lesson,
+  TopicMeta,
 } from '../data/types';
 
 /**
  * Compute topic completion as a percentage (0-100).
  * 80% weight for quizzes, 20% weight for essay.
+ *
+ * Works with lightweight TopicMeta (uses quizCount and counts correct
+ * attempts from progress) so we don't need the full Topic loaded.
  */
 export function computeTopicCompletion(
   topicId: string,
   progress: CurriculumProgress,
-  topic: Topic
+  meta: TopicMeta
 ): number {
   const topicProgress = progress.topics[topicId];
   if (!topicProgress) return 0;
 
-  const totalQuizzes = topic.quizzes.length;
+  const totalQuizzes = meta.quizCount;
   if (totalQuizzes === 0) return 0;
 
-  // Quiz portion: count correct quizzes
+  // Quiz portion: count correct quizzes from progress data
   let correctQuizzes = 0;
-  for (const quiz of topic.quizzes) {
-    const attempt = topicProgress.quizAttempts[quiz.id];
-    if (attempt && attempt.correct) {
+  for (const attempt of Object.values(topicProgress.quizAttempts)) {
+    if (attempt.correct) {
       correctQuizzes++;
     }
   }
+  // Cap at total quizzes to avoid exceeding 100%
+  correctQuizzes = Math.min(correctQuizzes, totalQuizzes);
 
   const quizPortion = (correctQuizzes / totalQuizzes) * 80;
 
@@ -45,19 +50,19 @@ export function computeLessonCompletion(
   lessonId: string,
   progress: CurriculumProgress,
   lessons: Record<string, Lesson>,
-  topics: Record<string, Topic>
+  allTopicMeta: Record<string, TopicMeta>
 ): number {
   const lesson = lessons[lessonId];
   if (!lesson) return 0;
 
   const activeTopicIds = lesson.topicIds.filter(
-    (id) => topics[id] && topics[id].status === 'active'
+    (id) => allTopicMeta[id] && allTopicMeta[id].status === 'active'
   );
   if (activeTopicIds.length === 0) return 0;
 
   let total = 0;
   for (const topicId of activeTopicIds) {
-    total += computeTopicCompletion(topicId, progress, topics[topicId]);
+    total += computeTopicCompletion(topicId, progress, allTopicMeta[topicId]);
   }
 
   return Math.round(total / activeTopicIds.length);
@@ -69,7 +74,7 @@ export function computeLessonCompletion(
 export function computeCurriculumCompletion(
   progress: CurriculumProgress,
   lessons: Record<string, Lesson>,
-  topics: Record<string, Topic>
+  allTopicMeta: Record<string, TopicMeta>
 ): number {
   const lessonIds = Object.keys(lessons).filter(
     (id) => lessons[id].status === 'active'
@@ -78,7 +83,7 @@ export function computeCurriculumCompletion(
 
   let total = 0;
   for (const lessonId of lessonIds) {
-    total += computeLessonCompletion(lessonId, progress, lessons, topics);
+    total += computeLessonCompletion(lessonId, progress, lessons, allTopicMeta);
   }
 
   return Math.round(total / lessonIds.length);
@@ -118,27 +123,30 @@ export function computeAccuracy(
 
 /**
  * Check whether the reward for a topic should be unlocked.
- * Requirements: all quizzes correct + essay saved with minimum characters.
+ * Works with TopicMeta for lightweight checks.
  */
 export function checkRewardUnlock(
   topicId: string,
   progress: CurriculumProgress,
-  topic: Topic
+  meta: TopicMeta
 ): boolean {
   const topicProgress = progress.topics[topicId];
   if (!topicProgress) return false;
-  if (!topic.reward) return false;
+  if (!meta.hasReward) return false;
 
-  // Check all quizzes correct
-  const allQuizzesCorrect = topic.quizzes.every((quiz) => {
-    const attempt = topicProgress.quizAttempts[quiz.id];
-    return attempt && attempt.correct;
-  });
+  // Check all quizzes correct: count correct attempts and compare to quiz count
+  let correctQuizzes = 0;
+  for (const attempt of Object.values(topicProgress.quizAttempts)) {
+    if (attempt.correct) {
+      correctQuizzes++;
+    }
+  }
+  const allQuizzesCorrect = correctQuizzes >= meta.quizCount;
 
   // Check essay submitted with minimum characters
   const essayMet =
     topicProgress.essaySubmitted &&
-    topicProgress.essayCharCount >= topic.essay.minCharacters;
+    topicProgress.essayCharCount >= meta.essayMinChars;
 
   return allQuizzesCorrect && essayMet;
 }
@@ -149,4 +157,28 @@ export function checkRewardUnlock(
 export function computeXpForQuiz(attempt: QuizAttempt, quiz: Quiz): number {
   if (!attempt.correct) return 0;
   return attempt.firstTryCorrect ? quiz.xpCorrectFirstTry : quiz.xpCorrectRetry;
+}
+
+/**
+ * Check reward unlock using a full Topic object (for use when topic is loaded).
+ */
+export function checkRewardUnlockFull(
+  topicId: string,
+  progress: CurriculumProgress,
+  topic: Topic
+): boolean {
+  const topicProgress = progress.topics[topicId];
+  if (!topicProgress) return false;
+  if (!topic.reward) return false;
+
+  const allQuizzesCorrect = topic.quizzes.every((quiz) => {
+    const attempt = topicProgress.quizAttempts[quiz.id];
+    return attempt && attempt.correct;
+  });
+
+  const essayMet =
+    topicProgress.essaySubmitted &&
+    topicProgress.essayCharCount >= topic.essay.minCharacters;
+
+  return allQuizzesCorrect && essayMet;
 }

@@ -192,7 +192,7 @@ export const ancientEgypt: Topic = {
           name: 'Cleopatra VII',
           title: 'The Last Pharaoh',
           description:
-            'Cleopatra was the last active ruler of ancient Egypt. Far from being just a beauty, she was incredibly smart, spoke nine languages, studied science and mathematics, and was a skilled diplomat. She allied with the Roman generals Julius Caesar and Mark Antony. Her defeat at the Battle of Actium in 30 BCE ended ancient Egyptian independence forever.',
+            'Cleopatra was the last active ruler of ancient Egypt. Far from being just a beauty, she was incredibly smart, spoke nine languages, studied science and mathematics, and was a skilled diplomat. She allied with the Roman generals Julius Caesar and Mark Antony. Her defeat at the Battle of Actium in 31 BCE ended ancient Egyptian independence forever.',
         },
         {
           emoji: '\u{1F3DB}\uFE0F',
@@ -267,7 +267,7 @@ export const ancientEgypt: Topic = {
           year: '671 BCE',
           title: 'The Assyrian Invasion',
           description:
-            'The powerful Assyrian Empire invaded and conquered Egypt. These fierce warriors from Mesopotamia had iron weapons and powerful siege machines. Egypt was occupied by foreigners for the first time in its long history. Though the Egyptians eventually pushed them out, the damage was done.',
+            'The powerful Assyrian Empire invaded and conquered Egypt. These fierce warriors from Mesopotamia had iron weapons and powerful siege machines. Egypt fell under Assyrian control. Though the Egyptians eventually pushed them out, the damage was done.',
         },
         {
           year: '525 BCE',

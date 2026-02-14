@@ -1,13 +1,59 @@
+import { useState, useCallback } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { ProgressProvider } from './context/ProgressContext'
 import AppLayout from './components/layout/AppLayout'
 import JourneyMapPage from './components/landing/JourneyMap'
 import LessonPage from './components/lesson/LessonPage'
 import TopicPage from './components/topic/TopicPage'
+import UsernameModal from './components/common/UsernameModal'
+import FeaturedTopicsModal from './components/common/FeaturedTopicsModal'
+import { useProgress } from './hooks/useProgress'
+import { getStoredUsername } from './lib/cloudSync'
+import type { CurriculumProgress } from './data/types'
 
-function App() {
+type ModalState = 'username' | 'featured' | 'none'
+
+function AppInner() {
+  const { setUsername, applyMergedProgress, progress } = useProgress()
+  // Determine initial modal state
+  const [modalState, setModalState] = useState<ModalState>(() => {
+    const storedUsername = getStoredUsername()
+    return storedUsername ? 'none' : 'username'
+  })
+
+  const handleUsernameComplete = useCallback(
+    (newUsername: string, mergedProgress: CurriculumProgress | null) => {
+      setUsername(newUsername)
+      if (mergedProgress) {
+        applyMergedProgress(mergedProgress)
+      }
+      // Show featured topics modal after username creation
+      setModalState('featured')
+    },
+    [setUsername, applyMergedProgress],
+  )
+
+  const handleUsernameSkip = useCallback(() => {
+    // Show featured topics modal even if they skip username
+    setModalState('featured')
+  }, [])
+
+  const handleFeaturedSkip = useCallback(() => {
+    setModalState('none')
+  }, [])
+
   return (
-    <ProgressProvider>
+    <>
+      {modalState === 'username' && (
+        <UsernameModal
+          onComplete={handleUsernameComplete}
+          onSkip={handleUsernameSkip}
+          localProgress={progress}
+        />
+      )}
+      {modalState === 'featured' && (
+        <FeaturedTopicsModal onSkip={handleFeaturedSkip} />
+      )}
       <Routes>
         <Route element={<AppLayout />}>
           <Route path="/" element={<JourneyMapPage />} />
@@ -15,6 +61,14 @@ function App() {
           <Route path="/lesson/:lessonSlug/:topicSlug" element={<TopicPage />} />
         </Route>
       </Routes>
+    </>
+  )
+}
+
+function App() {
+  return (
+    <ProgressProvider>
+      <AppInner />
     </ProgressProvider>
   )
 }

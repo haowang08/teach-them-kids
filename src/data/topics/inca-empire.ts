@@ -31,9 +31,14 @@ export const incaEmpire: Topic = {
       ],
       videos: [
         {
-          youtubeId: '',
+          youtubeId: 'UO5ktwPXsyM',
           title: 'The Rise and Fall of the Inca Empire',
           channelName: 'TED-Ed',
+        },
+        {
+          youtubeId: 'cnMa-Sm9H4k',
+          title: 'Machu Picchu 101',
+          channelName: 'National Geographic',
         },
       ],
       quizIds: [],
@@ -188,7 +193,7 @@ export const incaEmpire: Topic = {
           year: '1532\u20131533',
           title: 'Spanish Conquest',
           description:
-            'Spanish conquistador Francisco Pizarro arrived with fewer than 200 soldiers. Through surprise, trickery, and superior weapons, he captured Emperor Atahualpa at Cajamarca. Despite receiving an enormous ransom of gold and silver, the Spanish executed Atahualpa in 1533. The Inca Empire, which had stood for over 300 years, was brought to its knees.',
+            'Spanish conquistador Francisco Pizarro arrived with fewer than 200 soldiers. Through surprise, trickery, and superior weapons, he captured Emperor Atahualpa at Cajamarca. Despite receiving an enormous ransom of gold and silver, the Spanish executed Atahualpa in 1533. The Inca Empire, which had risen to greatness in less than a century, was brought to its knees.',
         },
       ],
       funFacts: [

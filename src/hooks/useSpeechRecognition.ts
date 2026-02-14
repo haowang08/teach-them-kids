@@ -323,12 +323,10 @@ export function useSpeechRecognition(): UseSpeechRecognitionReturn {
         const confidence = result[0].confidence;
 
         if (result.isFinal) {
-          // Edge case 15 (iOS): Dedup - iOS sometimes sends duplicates
-          if (platform.isIOS) {
-            const trimmed = transcript.trim();
-            if (seenTranscriptsRef.current.has(trimmed)) continue;
-            seenTranscriptsRef.current.add(trimmed);
-          }
+          // Dedup - browsers sometimes send duplicate final results
+          const trimmed = transcript.trim();
+          if (seenTranscriptsRef.current.has(trimmed)) continue;
+          seenTranscriptsRef.current.add(trimmed);
 
           // Edge case 7: Low confidence might mean non-English
           if (confidence > 0 && confidence < 0.4) {

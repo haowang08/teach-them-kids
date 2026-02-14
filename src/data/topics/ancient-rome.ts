@@ -265,7 +265,7 @@ export const ancientRome: Topic = {
       funFacts: [
         {
           title: 'Fun Fact!',
-          text: 'Many English words come from Latin, the language of Rome! Words like "video" (I see), "audio" (I hear), and even "dinosaur" (terrible lizard) have Roman roots. You\'re speaking a little bit of Roman every day!',
+          text: 'Many English words come from Latin, the language of Rome! Words like "video" (I see), "audio" (I hear), and even "dinosaur" (terrible lizard) has Greek roots. You\'re speaking a little bit of Roman every day!',
         },
       ],
       videos: [

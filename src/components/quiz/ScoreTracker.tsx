@@ -1,22 +1,19 @@
 'use client';
 
 import { useProgress } from '../../hooks/useProgress';
-import { getTopic } from '../../data/curriculum';
+import type { Topic } from '../../data/types';
 
 interface ScoreTrackerProps {
-  topicId: string;
+  topic: Topic;
 }
 
-export default function ScoreTracker({ topicId }: ScoreTrackerProps) {
+export default function ScoreTracker({ topic }: ScoreTrackerProps) {
   const { getTopicProgress } = useProgress();
-  const topic = getTopic(topicId);
-
-  if (!topic) return null;
 
   const totalQuizzes = topic.quizzes.length;
   if (totalQuizzes === 0) return null;
 
-  const topicProgress = getTopicProgress(topicId);
+  const topicProgress = getTopicProgress(topic.id);
   const correctCount = Object.values(topicProgress.quizAttempts).filter(
     (a) => a.correct
   ).length;

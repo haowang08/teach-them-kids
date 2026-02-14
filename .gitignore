@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+.next
+
+# Planning docs (not for deployment)
+NEW_TOPICS_PLAN.md

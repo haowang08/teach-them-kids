@@ -44,6 +44,22 @@ export interface Topic {
   navItems: NavItem[];
 }
 
+/**
+ * Lightweight metadata for a topic – available synchronously without
+ * loading the heavy content (sections, quizzes, essays, etc.).
+ */
+export interface TopicMeta {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle: string;
+  status: Status;
+  heroIcons: string[];
+  quizCount: number;
+  essayMinChars: number;
+  hasReward: boolean;
+}
+
 // ============================================
 // CONTENT BLOCKS
 // ============================================
@@ -144,7 +160,18 @@ export interface Reward {
   description: string;
   lockMessage: string;
   requirements: RewardRequirement[];
-  type: 'sketchfab' | 'chariot-race' | 'royal-road-messenger' | 'fireworks-designer' | 'quipu-code-breaker' | 'gold-caravan';
+  type: 'sketchfab' | 'chariot-race' | 'royal-road-messenger' | 'fireworks-designer' | 'quipu-code-breaker' | 'gold-caravan'
+    | 'cipher-machine' | 'perfect-shot' | 'fractal-explorer' | 'tessellation-builder' | 'number-translator' | 'frequency-explorer'
+    | 'baking-lab' | 'game-physics-sandbox' | 'card-trick-simulator'
+    | 'bridge-builder' | 'photo-compositor'
+    | 'treasure-chest' | 'pizza-party' | 'space-station' | 'lemonade-stand' | 'room-designer' | 'aquarium-builder' | 'mystery-solver' | 'treasure-map'
+    | 'virtual-spray-can' | 'illusion-builder' | 'pattern-maker' | 'flipbook-maker' | 'art-detective' | 'cave-painter' | 'comic-creator'
+    | 'spice-trade' | 'kitchen-lab' | 'street-food-stand' | 'chocolate-factory' | 'festival-calendar' | 'dumpling-wrapper' | 'noodle-puller' | 'bread-atlas'
+    | 'fashion-mix-match'
+    | 'virtual-clay-studio'
+    | 'rhythm-timeline'
+    | 'pizza-world-tour' | 'ice-cream-factory' | 'pickle-maker'
+    | 'temple-builder';
   embedUrl?: string;
   embedTitle?: string;
   celebrationMessage: string;

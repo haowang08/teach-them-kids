@@ -26,7 +26,7 @@ export default function JourneyMap() {
       {/* Header */}
       <div className="text-center pt-8 pb-4 px-4">
         <h1 className="font-heading text-3xl md:text-4xl text-dark-brown mb-1">
-          Kids Learn Everything
+          Learn something new
         </h1>
         <p className="text-dark-brown/60 text-sm md:text-base">
           Your adventure through knowledge starts here!

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 
 interface SpeechInputProps {
@@ -20,11 +20,19 @@ export default function SpeechInput({ onTranscript }: SpeechInputProps) {
     dismissError,
   } = useSpeechRecognition();
 
+  // Guard against dispatching the same transcript twice
+  const lastSentRef = useRef('');
+  const processingRef = useRef(false);
+
   // Push final transcript to parent
   useEffect(() => {
-    if (finalTranscript) {
+    if (finalTranscript && !processingRef.current && finalTranscript !== lastSentRef.current) {
+      processingRef.current = true;
+      lastSentRef.current = finalTranscript;
       onTranscript(finalTranscript);
       resetTranscript();
+      // Allow next dispatch after a microtask to let state settle
+      Promise.resolve().then(() => { processingRef.current = false; });
     }
   }, [finalTranscript, onTranscript, resetTranscript]);
 

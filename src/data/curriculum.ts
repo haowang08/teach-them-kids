@@ -1,29 +1,635 @@
-import type { Curriculum, Lesson, Topic } from './types';
-import { ancientEgypt } from './topics/ancient-egypt';
-import { ancientRome } from './topics/ancient-rome';
-import { persianEmpire } from './topics/persian-empire';
-import { chineseDynasties } from './topics/chinese-dynasties';
-import { incaEmpire } from './topics/inca-empire';
-import { mali } from './topics/mali';
+import type { Curriculum, Lesson, Topic, TopicMeta } from './types';
 
-// Re-export topic data for convenience
-export { ancientEgypt } from './topics/ancient-egypt';
-export { ancientRome } from './topics/ancient-rome';
-export { persianEmpire } from './topics/persian-empire';
-export { chineseDynasties } from './topics/chinese-dynasties';
-export { incaEmpire } from './topics/inca-empire';
-export { mali } from './topics/mali';
+// ─── Lightweight topic metadata (loaded synchronously) ─────────────
 
-// ─── Flat maps for O(1) lookups ──────────────────────────────────
-
-export const topics: Record<string, Topic> = {
-  'ancient-egypt': ancientEgypt,
-  'ancient-rome': ancientRome,
-  'persian-empire': persianEmpire,
-  'chinese-dynasties': chineseDynasties,
-  'inca-empire': incaEmpire,
-  'mali': mali,
+export const topicMeta: Record<string, TopicMeta> = {
+  'algebra-solve-for-x': {
+    id: 'algebra-solve-for-x',
+    slug: 'algebra-solve-for-x',
+    title: 'Mystery Detective',
+    subtitle: 'Solve for the Unknown!',
+    status: 'active',
+    heroIcons: ['\u{1F50D}', '\u2753', '\u{1F9E9}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'algebra-solve-for-xy': {
+    id: 'algebra-solve-for-xy',
+    slug: 'algebra-solve-for-xy',
+    title: 'Treasure Map Coordinates',
+    subtitle: 'Solve Systems of Equations!',
+    status: 'active',
+    heroIcons: ['\u{1F5FA}\uFE0F', '\u{1F4CD}', '\u{1F48E}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'ancient-egypt': {
+    id: 'ancient-egypt',
+    slug: 'ancient-egypt',
+    title: 'Ancient Egypt Adventure!',
+    subtitle: 'Journey back thousands of years to discover powerful gods, legendary pharaohs, and a civilization that amazed the world!',
+    status: 'active',
+    heroIcons: ['\u{1F3DB}\uFE0F', '\u{1F4DC}', '\u{1F451}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'ancient-rome': {
+    id: 'ancient-rome',
+    slug: 'ancient-rome',
+    title: 'Ancient Rome Adventure!',
+    subtitle: 'Travel back in time to discover amazing gods, brave soldiers, and a powerful empire!',
+    status: 'active',
+    heroIcons: ['\u{1F3DB}\uFE0F', '\u2694\uFE0F', '\u{1F451}'],
+    quizCount: 11,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'khmer-empire': {
+    id: 'khmer-empire',
+    slug: 'khmer-empire',
+    title: 'The Khmer Empire',
+    subtitle: 'Discover the builders of Angkor Wat, masters of water, and rulers of the greatest city in the medieval world!',
+    status: 'active',
+    heroIcons: ['\u{1F3DB}\uFE0F', '\u{1F418}', '\u{1F4A7}'],
+    quizCount: 12,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'animation-nation': {
+    id: 'animation-nation',
+    slug: 'animation-nation',
+    title: 'Animation Nation',
+    subtitle: 'How Pictures Come to Life',
+    status: 'active',
+    heroIcons: ['\u{1F3AC}', '\u{1F3A8}', '\u2728'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'architecture-wonders': {
+    id: 'architecture-wonders',
+    slug: 'architecture-wonders',
+    title: 'Architecture Wonders',
+    subtitle: 'From Pyramids to Skyscrapers: The Buildings That Changed the World',
+    status: 'active',
+    heroIcons: ['\u{1F3D7}\uFE0F', '\u{1F309}', '\u{1F3DB}\uFE0F'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'art-around-the-world': {
+    id: 'art-around-the-world',
+    slug: 'art-around-the-world',
+    title: 'Art From Around the World',
+    subtitle: 'A Global Journey Through Creativity',
+    status: 'active',
+    heroIcons: ['\u{1F30D}', '\u{1F3A8}', '\u{1F3AD}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'bread-around-the-world': {
+    id: 'bread-around-the-world',
+    slug: 'bread-around-the-world',
+    title: 'Bread Around the World',
+    subtitle: 'The Rise of Humanity\'s Oldest Food',
+    status: 'active',
+    heroIcons: ['\u{1F35E}', '\u{1F30D}', '\u{1FAD3}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'chinese-dynasties': {
+    id: 'chinese-dynasties',
+    slug: 'chinese-dynasties',
+    title: 'Ancient Chinese Dynasties',
+    subtitle: 'Dragons, Emperors & World-Changing Inventions',
+    status: 'active',
+    heroIcons: ['\u{1F409}', '\u{1F3EF}', '\u{1F9E8}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'colors-light-illusions': {
+    id: 'colors-light-illusions',
+    slug: 'colors-light-illusions',
+    title: 'Colors, Light & Optical Illusions',
+    subtitle: 'How Your Eyes Trick Your Brain',
+    status: 'active',
+    heroIcons: ['\u{1F308}', '\u{1F441}\uFE0F', '\u2728'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'dividing-by-single-digits': {
+    id: 'dividing-by-single-digits',
+    slug: 'dividing-by-single-digits',
+    title: 'Pizza Party Planner',
+    subtitle: 'Master Dividing by Single Digits',
+    status: 'active',
+    heroIcons: ['\u{1F355}', '\u2797', '\u{1F389}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'dumplings-around-the-world': {
+    id: 'dumplings-around-the-world',
+    slug: 'dumplings-around-the-world',
+    title: 'Dumplings Around the World',
+    subtitle: 'Every Culture Has a Dumpling!',
+    status: 'active',
+    heroIcons: ['\u{1F95F}', '\u{1F30D}', '\u{1F373}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'fashion-textile-art': {
+    id: 'fashion-textile-art',
+    slug: 'fashion-textile-art',
+    title: 'Fashion & Textile Art',
+    subtitle: 'Threads, Fabrics & Style Across the Ages',
+    status: 'active',
+    heroIcons: ['\u{1F457}', '\u{1F9F5}', '\u{1FAA1}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'feasts-festivals-food': {
+    id: 'feasts-festivals-food',
+    slug: 'feasts-festivals-food',
+    title: 'Feasts, Festivals & Food Traditions',
+    subtitle: 'How the World Celebrates with Food',
+    status: 'active',
+    heroIcons: ['\u{1F389}', '\u{1F372}', '\u{1F38A}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'fermentation-yummy-science': {
+    id: 'fermentation-yummy-science',
+    slug: 'fermentation-yummy-science',
+    title: 'Fermentation: The Yummy Science',
+    subtitle: 'How Tiny Microbes Make Our Favorite Foods',
+    status: 'active',
+    heroIcons: ['\u{1F9C0}', '\u{1FAD9}', '\u{1F35E}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'foods-that-changed-the-world': {
+    id: 'foods-that-changed-the-world',
+    slug: 'foods-that-changed-the-world',
+    title: 'Foods That Changed the World',
+    subtitle: 'How Spices, Sugar & Potatoes Shaped History',
+    status: 'active',
+    heroIcons: ['\u{1F336}\uFE0F', '\u{1F30D}', '\u{1F954}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'geometry-area': {
+    id: 'geometry-area',
+    slug: 'geometry-area',
+    title: 'Dream Room Designer',
+    subtitle: 'Master Area & Perimeter',
+    status: 'active',
+    heroIcons: ['\u{1F3E0}', '\u{1F4D0}', '\u{1F4CF}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'geometry-volume': {
+    id: 'geometry-volume',
+    slug: 'geometry-volume',
+    title: 'Aquarium Architect',
+    subtitle: 'Master Volume & 3D Shapes',
+    status: 'active',
+    heroIcons: ['\u{1F41F}', '\u{1F4E6}', '\u{1F30A}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'history-of-counting': {
+    id: 'history-of-counting',
+    slug: 'history-of-counting',
+    title: 'History of Counting: From Fingers to Computers',
+    subtitle: 'How Humans Learned to Count',
+    status: 'active',
+    heroIcons: ['\u{1F9EE}', '\u{1F522}', '\u{1F4BB}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'history-of-noodles': {
+    id: 'history-of-noodles',
+    slug: 'history-of-noodles',
+    title: 'The History of Noodles',
+    subtitle: 'The 4,000-Year Journey of the World\'s Favorite Food',
+    status: 'active',
+    heroIcons: ['\u{1F35C}', '\u{1F30F}', '\u{1F9C6}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'ice-cream-frozen-treats': {
+    id: 'ice-cream-frozen-treats',
+    slug: 'ice-cream-frozen-treats',
+    title: 'Ice Cream & Frozen Treats',
+    subtitle: 'From Ancient Snow Desserts to Modern Scoops',
+    status: 'active',
+    heroIcons: ['\u{1F366}', '\u{1F367}', '\u{1F368}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'inca-empire': {
+    id: 'inca-empire',
+    slug: 'inca-empire',
+    title: 'The Inca Empire',
+    subtitle: 'Empire in the Clouds',
+    status: 'active',
+    heroIcons: ['\u2600\uFE0F', '\u{1F3D4}\uFE0F', '\u{1F999}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'journey-of-chocolate': {
+    id: 'journey-of-chocolate',
+    slug: 'journey-of-chocolate',
+    title: 'The Incredible Journey of Chocolate',
+    subtitle: 'From Sacred Drink to Sweet Treat',
+    status: 'active',
+    heroIcons: ['\u{1F36B}', '\u{1F3FA}', '\u{1F33F}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'kitchen-science-lab': {
+    id: 'kitchen-science-lab',
+    slug: 'kitchen-science-lab',
+    title: 'Kitchen Science Lab',
+    subtitle: 'The Amazing Science of Cooking',
+    status: 'active',
+    heroIcons: ['\u{1F9EA}', '\u{1F373}', '\u{1F525}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'mali': {
+    id: 'mali',
+    slug: 'mali',
+    title: 'The Mali Empire',
+    subtitle: 'Golden Kings, Great Griots & the Richest Man in History',
+    status: 'active',
+    heroIcons: ['\u{1F451}', '\u{1F30D}', '\u{1F4D6}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'math-in-cooking': {
+    id: 'math-in-cooking',
+    slug: 'math-in-cooking',
+    title: 'Math in Cooking',
+    subtitle: 'Measuring, Mixing & the Secret Math Behind Every Recipe',
+    status: 'active',
+    heroIcons: ['\u{1F9C1}', '\u{1F373}', '\u{1F4CF}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'math-in-music': {
+    id: 'math-in-music',
+    slug: 'math-in-music',
+    title: 'Math in Music',
+    subtitle: 'Discover the Hidden Numbers Behind Every Beat, Note & Song',
+    status: 'active',
+    heroIcons: ['\u{1F3B5}', '\u{1F3B9}', '\u{1F3B6}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'math-in-nature': {
+    id: 'math-in-nature',
+    slug: 'math-in-nature',
+    title: 'Math in Nature',
+    subtitle: 'Fibonacci, Fractals & the Golden Ratio Hidden All Around You',
+    status: 'active',
+    heroIcons: ['\u{1F33B}', '\u{1F340}', '\u{1F41A}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'math-in-sports': {
+    id: 'math-in-sports',
+    slug: 'math-in-sports',
+    title: 'Math in Sports',
+    subtitle: 'The Hidden Numbers Behind Every Game',
+    status: 'active',
+    heroIcons: ['\u{1F3C0}', '\u26BD', '\u{1F3C8}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'math-in-video-games': {
+    id: 'math-in-video-games',
+    slug: 'math-in-video-games',
+    title: 'Math in Video Games',
+    subtitle: 'Coordinates, Physics & the Hidden Numbers Powering Every Game',
+    status: 'active',
+    heroIcons: ['\u{1F3AE}', '\u{1F4BB}', '\u{1F579}\uFE0F'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'math-magic-tricks': {
+    id: 'math-magic-tricks',
+    slug: 'math-magic-tricks',
+    title: 'Math Magic Tricks',
+    subtitle: 'Amaze Your Friends with the Power of Numbers!',
+    status: 'active',
+    heroIcons: ['\u{1FA84}', '\u{1F0CF}', '\u2728'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'multi-digit-division': {
+    id: 'multi-digit-division',
+    slug: 'multi-digit-division',
+    title: 'Lemonade Stand Tycoon',
+    subtitle: 'Master Multi-Digit Division',
+    status: 'active',
+    heroIcons: ['\u{1F34B}', '\u2797', '\u{1F4B0}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'multi-digit-multiplication': {
+    id: 'multi-digit-multiplication',
+    slug: 'multi-digit-multiplication',
+    title: 'Space Station Builder',
+    subtitle: 'Master Multi-Digit Multiplication',
+    status: 'active',
+    heroIcons: ['\u{1F680}', '\u2716\uFE0F', '\u{1F6F8}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'music-through-the-ages': {
+    id: 'music-through-the-ages',
+    slug: 'music-through-the-ages',
+    title: 'Music Through the Ages',
+    subtitle: 'From Ancient Drums to Digital Beats: A Journey Through the World of Sound',
+    status: 'active',
+    heroIcons: ['\u{1F3B5}', '\u{1F3BB}', '\u{1FA98}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'mysterious-paintings': {
+    id: 'mysterious-paintings',
+    slug: 'mysterious-paintings',
+    title: 'The World\'s Most Mysterious Paintings',
+    subtitle: 'Secrets Hidden in Famous Art',
+    status: 'active',
+    heroIcons: ['\u{1F5BC}\uFE0F', '\u{1F50D}', '\u{1F3A8}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'patterns-puzzles-magic': {
+    id: 'patterns-puzzles-magic',
+    slug: 'patterns-puzzles-magic',
+    title: 'Patterns, Puzzles & Magic Tricks',
+    subtitle: 'The Math Behind the Magic',
+    status: 'active',
+    heroIcons: ['\u{1F33B}', '\u{1F9E9}', '\u2728'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'persian-empire': {
+    id: 'persian-empire',
+    slug: 'persian-empire',
+    title: 'The Persian Empire',
+    subtitle: 'The World\'s First Superpower',
+    status: 'active',
+    heroIcons: ['\u{1F451}', '\u2694\uFE0F', '\u{1F525}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'photography': {
+    id: 'photography',
+    slug: 'photography',
+    title: 'Photography',
+    subtitle: 'Capturing Light: From the First Camera to Your Phone',
+    status: 'active',
+    heroIcons: ['\u{1F4F7}', '\u{1F4F8}', '\u{1F305}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'pizza-a-global-story': {
+    id: 'pizza-a-global-story',
+    slug: 'pizza-a-global-story',
+    title: 'Pizza: A Global Story',
+    subtitle: 'From Ancient Flatbreads to the World\'s Favorite Food',
+    status: 'active',
+    heroIcons: ['\u{1F355}', '\u{1F9C0}', '\u{1F35D}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'prehistoric-cave-art': {
+    id: 'prehistoric-cave-art',
+    slug: 'prehistoric-cave-art',
+    title: 'Pre-historic Cave Art Around the World',
+    subtitle: 'The First Artists in Human History',
+    status: 'active',
+    heroIcons: ['\u{1F3D4}\uFE0F', '\u270B', '\u{1F525}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'sculpture-3d-art': {
+    id: 'sculpture-3d-art',
+    slug: 'sculpture-3d-art',
+    title: 'Sculpture & 3D Art',
+    subtitle: 'From Ancient Stone to Digital Worlds',
+    status: 'active',
+    heroIcons: ['\u{1F5FF}', '\u{1F3DB}\uFE0F', '\u{1F9F1}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'secret-codes': {
+    id: 'secret-codes',
+    slug: 'secret-codes',
+    title: 'The Secret Language of Codes',
+    subtitle: 'Ciphers, Puzzles & Hidden Messages',
+    status: 'active',
+    heroIcons: ['\u{1F510}', '\u{1F4DC}', '\u{1F575}\uFE0F'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'shape-shifters': {
+    id: 'shape-shifters',
+    slug: 'shape-shifters',
+    title: 'Shape Shifters: Geometry in the Real World',
+    subtitle: 'How Shapes Build Our World',
+    status: 'active',
+    heroIcons: ['\u{1F4D0}', '\u2B21', '\u{1F3DB}\uFE0F'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'single-digit-multiplication': {
+    id: 'single-digit-multiplication',
+    slug: 'single-digit-multiplication',
+    title: 'Pirate Treasure Counter',
+    subtitle: 'Master Single-Digit Multiplication',
+    status: 'active',
+    heroIcons: ['\u{1F3F4}\u200D\u2620\uFE0F', '\u2716\uFE0F', '\u{1FA99}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'street-art': {
+    id: 'street-art',
+    slug: 'street-art',
+    title: 'Street Art Superstars',
+    subtitle: 'From Graffiti to Gallery Walls',
+    status: 'active',
+    heroIcons: ['\u{1F3A8}', '\u{1F5BC}\uFE0F', '\u2728'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'street-food-around-the-world': {
+    id: 'street-food-around-the-world',
+    slug: 'street-food-around-the-world',
+    title: 'Street Food Around the World',
+    subtitle: 'Delicious Bites From Every Corner of the Globe',
+    status: 'active',
+    heroIcons: ['\u{1F35C}', '\u{1F32E}', '\u{1F354}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'superhero-comics': {
+    id: 'superhero-comics',
+    slug: 'superhero-comics',
+    title: 'Superhero Comics',
+    subtitle: 'The History & Evolution of Comic Book Heroes',
+    status: 'active',
+    heroIcons: ['\u{1F4A5}', '\u{1F9B8}', '\u{1F4D6}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
+  'the-story-of-spices': {
+    id: 'the-story-of-spices',
+    slug: 'the-story-of-spices',
+    title: 'Spices and Silk',
+    subtitle: 'From Ancient Spice Routes to the Silk Road and Your Kitchen Table',
+    status: 'active',
+    heroIcons: ['\u{1F9C2}', '\u{1F336}\uFE0F', '\u{1F33F}'],
+    quizCount: 10,
+    essayMinChars: 100,
+    hasReward: true,
+  },
 };
+
+// ─── Dynamic topic loaders (lazy-loaded on demand) ─────────────────
+
+const topicLoaders: Record<string, () => Promise<Topic>> = {
+  'algebra-solve-for-x': () => import('./topics/algebra-solve-for-x').then(m => m.algebraSolveForX),
+  'algebra-solve-for-xy': () => import('./topics/algebra-solve-for-xy').then(m => m.algebraSolveForXY),
+  'ancient-egypt': () => import('./topics/ancient-egypt').then(m => m.ancientEgypt),
+  'ancient-rome': () => import('./topics/ancient-rome').then(m => m.ancientRome),
+  'khmer-empire': () => import('./topics/khmer-empire').then(m => m.khmerEmpire),
+  'animation-nation': () => import('./topics/animation-nation').then(m => m.animationNation),
+  'architecture-wonders': () => import('./topics/architecture-wonders').then(m => m.architectureWonders),
+  'art-around-the-world': () => import('./topics/art-around-the-world').then(m => m.artAroundTheWorld),
+  'bread-around-the-world': () => import('./topics/bread-around-the-world').then(m => m.breadAroundTheWorld),
+  'chinese-dynasties': () => import('./topics/chinese-dynasties').then(m => m.chineseDynasties),
+  'colors-light-illusions': () => import('./topics/colors-light-illusions').then(m => m.colorsLightIllusions),
+  'dividing-by-single-digits': () => import('./topics/dividing-by-single-digits').then(m => m.dividingBySingleDigits),
+  'dumplings-around-the-world': () => import('./topics/dumplings-around-the-world').then(m => m.dumplingsAroundTheWorld),
+  'fashion-textile-art': () => import('./topics/fashion-textile-art').then(m => m.fashionTextileArt),
+  'feasts-festivals-food': () => import('./topics/feasts-festivals-food').then(m => m.feastsFestivalsFood),
+  'fermentation-yummy-science': () => import('./topics/fermentation-yummy-science').then(m => m.fermentationYummyScience),
+  'foods-that-changed-the-world': () => import('./topics/foods-that-changed-the-world').then(m => m.foodsThatChangedTheWorld),
+  'geometry-area': () => import('./topics/geometry-area').then(m => m.geometryArea),
+  'geometry-volume': () => import('./topics/geometry-volume').then(m => m.geometryVolume),
+  'history-of-counting': () => import('./topics/history-of-counting').then(m => m.historyOfCounting),
+  'history-of-noodles': () => import('./topics/history-of-noodles').then(m => m.historyOfNoodles),
+  'ice-cream-frozen-treats': () => import('./topics/ice-cream-frozen-treats').then(m => m.iceCreamFrozenTreats),
+  'inca-empire': () => import('./topics/inca-empire').then(m => m.incaEmpire),
+  'journey-of-chocolate': () => import('./topics/journey-of-chocolate').then(m => m.journeyOfChocolate),
+  'kitchen-science-lab': () => import('./topics/kitchen-science-lab').then(m => m.kitchenScienceLab),
+  'mali': () => import('./topics/mali').then(m => m.mali),
+  'math-in-cooking': () => import('./topics/math-in-cooking').then(m => m.mathInCooking),
+  'math-in-music': () => import('./topics/math-in-music').then(m => m.mathInMusic),
+  'math-in-nature': () => import('./topics/math-in-nature').then(m => m.mathInNature),
+  'math-in-sports': () => import('./topics/math-in-sports').then(m => m.mathInSports),
+  'math-in-video-games': () => import('./topics/math-in-video-games').then(m => m.mathInVideoGames),
+  'math-magic-tricks': () => import('./topics/math-magic-tricks').then(m => m.mathMagicTricks),
+  'multi-digit-division': () => import('./topics/multi-digit-division').then(m => m.multiDigitDivision),
+  'multi-digit-multiplication': () => import('./topics/multi-digit-multiplication').then(m => m.multiDigitMultiplication),
+  'music-through-the-ages': () => import('./topics/music-through-the-ages').then(m => m.musicThroughTheAges),
+  'mysterious-paintings': () => import('./topics/mysterious-paintings').then(m => m.mysteriousPaintings),
+  'patterns-puzzles-magic': () => import('./topics/patterns-puzzles-magic').then(m => m.patternsPuzzlesMagic),
+  'persian-empire': () => import('./topics/persian-empire').then(m => m.persianEmpire),
+  'photography': () => import('./topics/photography').then(m => m.photography),
+  'pizza-a-global-story': () => import('./topics/pizza-a-global-story').then(m => m.pizzaAGlobalStory),
+  'prehistoric-cave-art': () => import('./topics/prehistoric-cave-art').then(m => m.prehistoricCaveArt),
+  'sculpture-3d-art': () => import('./topics/sculpture-3d-art').then(m => m.sculpture3dArt),
+  'secret-codes': () => import('./topics/secret-codes').then(m => m.secretCodes),
+  'shape-shifters': () => import('./topics/shape-shifters').then(m => m.shapeShifters),
+  'single-digit-multiplication': () => import('./topics/single-digit-multiplication').then(m => m.singleDigitMultiplication),
+  'street-art': () => import('./topics/street-art').then(m => m.streetArt),
+  'street-food-around-the-world': () => import('./topics/street-food-around-the-world').then(m => m.streetFoodAroundTheWorld),
+  'superhero-comics': () => import('./topics/superhero-comics').then(m => m.superheroComics),
+  'the-story-of-spices': () => import('./topics/the-story-of-spices').then(m => m.theStoryOfSpices),
+};
+
+// ─── Topic cache (populated on demand) ─────────────────────────────
+
+const topicCache: Record<string, Topic> = {};
+
+/** Load a full topic by its ID (async, cached). */
+export async function loadTopic(id: string): Promise<Topic | undefined> {
+  if (topicCache[id]) return topicCache[id];
+  const loader = topicLoaders[id];
+  if (!loader) return undefined;
+  const topic = await loader();
+  topicCache[id] = topic;
+  return topic;
+}
+
+/** Load a full topic by its slug (async, cached). */
+export async function getTopicBySlug(slug: string): Promise<Topic | undefined> {
+  // slug === id in this codebase
+  const meta = Object.values(topicMeta).find((m) => m.slug === slug);
+  if (!meta) return undefined;
+  return loadTopic(meta.id);
+}
+
+/**
+ * Get a full topic synchronously from the cache.
+ * Returns undefined if the topic has not been loaded yet.
+ * Prefer `loadTopic()` for guaranteed data.
+ */
+export function getTopic(id: string): Topic | undefined {
+  return topicCache[id];
+}
+
+// ─── Lessons ───────────────────────────────────────────────────────
 
 export const lessons: Record<string, Lesson> = {
   'ancient-civilizations': {
@@ -40,6 +646,7 @@ export const lessons: Record<string, Lesson> = {
       'chinese-dynasties',
       'inca-empire',
       'mali',
+      'khmer-empire',
     ],
   },
   'fun-math': {
@@ -47,15 +654,15 @@ export const lessons: Record<string, Lesson> = {
     title: 'Fun Math',
     icon: '\u{1F9E9}',
     description: 'Explore the hidden math behind codes, sports, patterns, shapes, and the history of numbers!',
-    status: 'coming-soon',
-    topicIds: ['secret-codes', 'math-in-sports', 'patterns-puzzles-magic', 'shape-shifters', 'history-of-counting'],
+    status: 'active',
+    topicIds: ['secret-codes', 'math-in-sports', 'patterns-puzzles-magic', 'shape-shifters', 'history-of-counting', 'math-in-music', 'math-in-nature', 'math-in-cooking', 'math-in-video-games', 'math-magic-tricks'],
   },
   'not-so-fun-math': {
     id: 'not-so-fun-math',
     title: 'Not-so-fun Math ;-)',
     icon: '\u{1F4DD}',
     description: 'Master multiplication, division, geometry, and algebra through pirates, pizza, space, and treasure hunts!',
-    status: 'coming-soon',
+    status: 'active',
     topicIds: ['single-digit-multiplication', 'dividing-by-single-digits', 'multi-digit-multiplication', 'multi-digit-division', 'geometry-area', 'geometry-volume', 'algebra-solve-for-x', 'algebra-solve-for-xy'],
   },
   art: {
@@ -63,16 +670,16 @@ export const lessons: Record<string, Lesson> = {
     title: 'Art',
     icon: '\u{1F3A8}',
     description: 'Discover street art, optical illusions, animation, mysterious paintings, cave art, and superhero comics!',
-    status: 'coming-soon',
-    topicIds: ['street-art', 'colors-light-illusions', 'art-around-the-world', 'animation-nation', 'mysterious-paintings', 'prehistoric-cave-art', 'superhero-comics'],
+    status: 'active',
+    topicIds: ['street-art', 'colors-light-illusions', 'art-around-the-world', 'animation-nation', 'mysterious-paintings', 'prehistoric-cave-art', 'superhero-comics', 'architecture-wonders', 'photography', 'music-through-the-ages', 'fashion-textile-art', 'sculpture-3d-art'],
   },
   food: {
     id: 'food',
     title: 'Food',
     icon: '\u{1F354}',
     description: 'Explore foods that changed history, kitchen science, street food, chocolate, festivals, dumplings, and noodles!',
-    status: 'coming-soon',
-    topicIds: ['foods-that-changed-the-world', 'kitchen-science-lab', 'street-food-around-the-world', 'journey-of-chocolate', 'feasts-festivals-food', 'dumplings-around-the-world', 'history-of-noodles'],
+    status: 'active',
+    topicIds: ['foods-that-changed-the-world', 'kitchen-science-lab', 'street-food-around-the-world', 'journey-of-chocolate', 'feasts-festivals-food', 'dumplings-around-the-world', 'history-of-noodles', 'bread-around-the-world', 'the-story-of-spices', 'pizza-a-global-story', 'ice-cream-frozen-treats', 'fermentation-yummy-science'],
   },
 };
 
@@ -100,12 +707,12 @@ export function getLesson(id: string): Lesson | undefined {
   return lessons[id];
 }
 
-export function getTopic(id: string): Topic | undefined {
-  return topics[id];
+export function getTopicMeta(id: string): TopicMeta | undefined {
+  return topicMeta[id];
 }
 
-export function getTopicBySlug(slug: string): Topic | undefined {
-  return Object.values(topics).find((t) => t.slug === slug);
+export function getTopicMetaBySlug(slug: string): TopicMeta | undefined {
+  return Object.values(topicMeta).find((m) => m.slug === slug);
 }
 
 export function getLessonForTopic(topicId: string): Lesson | undefined {
@@ -114,10 +721,10 @@ export function getLessonForTopic(topicId: string): Lesson | undefined {
   );
 }
 
-export function getTopicsForLesson(lessonId: string): Topic[] {
+export function getTopicMetasForLesson(lessonId: string): TopicMeta[] {
   const lesson = lessons[lessonId];
   if (!lesson) return [];
   return lesson.topicIds
-    .map((id) => topics[id])
-    .filter((t): t is Topic => t !== undefined);
+    .map((id) => topicMeta[id])
+    .filter((t): t is TopicMeta => t !== undefined);
 }

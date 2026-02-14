@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { Essay } from '../../data/types';
 import { useProgress } from '../../hooks/useProgress';
 import CharCounter from './CharCounter';
@@ -12,25 +12,53 @@ interface EssaySectionProps {
 }
 
 export default function EssaySection({ essay, topicId }: EssaySectionProps) {
-  const { recordEssaySave, getTopicProgress } = useProgress();
+  const { recordEssaySave, recordEssayDraft, getTopicProgress } = useProgress();
   const topicProgress = getTopicProgress(topicId);
 
   const [text, setText] = useState(topicProgress.essayText || '');
   const [saved, setSaved] = useState(topicProgress.essaySubmitted);
+  const [autoSaved, setAutoSaved] = useState(false);
+  const draftTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const charCount = text.length;
   const meetsMinimum = charCount >= essay.minCharacters;
+
+  // Debounced auto-save draft (2 seconds after last change)
+  useEffect(() => {
+    if (draftTimerRef.current) clearTimeout(draftTimerRef.current);
+
+    // Don't auto-save if nothing has been typed
+    if (!text) return;
+
+    draftTimerRef.current = setTimeout(() => {
+      recordEssayDraft(topicId, text);
+      if (!saved) {
+        setAutoSaved(true);
+        setTimeout(() => setAutoSaved(false), 2000);
+      }
+    }, 2000);
+
+    return () => {
+      if (draftTimerRef.current) clearTimeout(draftTimerRef.current);
+    };
+  }, [text, topicId, recordEssayDraft, saved]);
 
   const handleSave = useCallback(() => {
     if (!meetsMinimum) return;
     recordEssaySave(topicId, text, charCount);
     setSaved(true);
+    setAutoSaved(false);
   }, [meetsMinimum, recordEssaySave, topicId, text, charCount]);
 
   const handleTranscript = useCallback((transcript: string) => {
     setText((prev) => {
+      // Dedup: skip if the text already ends with this transcript
+      const trimmed = transcript.trim();
+      if (!trimmed) return prev;
+      if (prev.trimEnd().endsWith(trimmed)) return prev;
+
       const needsSpace = prev.length > 0 && !prev.endsWith(' ');
-      return prev + (needsSpace ? ' ' : '') + transcript;
+      return prev + (needsSpace ? ' ' : '') + trimmed;
     });
     setSaved(false);
   }, []);
@@ -73,8 +101,15 @@ export default function EssaySection({ essay, topicId }: EssaySectionProps) {
           className="w-full rounded-xl border-2 border-[var(--topic-bronze)]/30 bg-white px-4 py-3 text-base text-[var(--topic-dark-brown)] leading-relaxed placeholder:text-[var(--topic-bronze)]/40 focus:outline-none focus:border-[var(--topic-gold)] focus:ring-2 focus:ring-[var(--topic-gold)]/20 resize-y"
         />
 
-        {/* Char counter */}
-        <CharCounter current={charCount} min={essay.minCharacters} />
+        {/* Char counter + auto-save indicator */}
+        <div className="flex items-center justify-between">
+          <CharCounter current={charCount} min={essay.minCharacters} />
+          {autoSaved && (
+            <span className="text-xs text-gray-400 italic transition-opacity">
+              Draft saved
+            </span>
+          )}
+        </div>
 
         {/* Controls */}
         <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">

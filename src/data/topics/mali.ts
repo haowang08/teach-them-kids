@@ -144,7 +144,7 @@ export const mali: Topic = {
           name: 'Mansa Sulayman',
           title: 'Keeper of the Empire',
           description:
-            'Mansa Sulayman was Mansa Musa\'s brother and successor who continued building Mali\'s power and prestige. He maintained the empire\'s vast trading networks and kept the government running smoothly. He was the ruler who hosted Ibn Battuta during his famous visit. Sulayman proved that Mali\'s greatness didn\'t depend on just one ruler but was built on strong institutions!',
+            'Mansa Sulayman was Mansa Musa\'s brother who took the throne after Musa\'s son Mansa Maghan I ruled for about four years. He continued building Mali\'s power and prestige. He maintained the empire\'s vast trading networks and kept the government running smoothly. He was the ruler who hosted Ibn Battuta during his famous visit. Sulayman proved that Mali\'s greatness didn\'t depend on just one ruler but was built on strong institutions!',
         },
       ],
       funFacts: [

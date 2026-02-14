@@ -36,9 +36,9 @@ export const persianEmpire: Topic = {
           channelName: 'CrashCourse',
         },
         {
-          youtubeId: 'wcTnjj1dtd0',
-          title: 'Engineering an Empire: The Persians',
-          channelName: 'History Channel',
+          youtubeId: 'GznV0_JVrZc',
+          title: 'Persian Empire - Trade, Government, and Lasting Influence',
+          channelName: 'YouTube',
         },
       ],
       quizIds: [],

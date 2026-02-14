@@ -6,12 +6,22 @@ import {
   createEmptyProgress,
   migrateOldData,
 } from '../lib/localStorage';
+import {
+  getStoredUsername,
+  loadCloudProgress,
+  saveCloudProgress,
+  mergeProgress,
+} from '../lib/cloudSync';
 
 interface ProgressContextValue {
   progress: CurriculumProgress;
   xp: number;
+  username: string | null;
+  setUsername: (username: string | null) => void;
+  applyMergedProgress: (merged: CurriculumProgress) => void;
   recordQuizAttempt: (topicId: string, quizId: string, isCorrect: boolean) => void;
   recordEssaySave: (topicId: string, text: string, charCount: number) => void;
+  recordEssayDraft: (topicId: string, text: string) => void;
   markRewardUnlocked: (topicId: string) => void;
   getTopicProgress: (topicId: string) => TopicProgress;
   resetProgress: () => void;
@@ -31,7 +41,10 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const [progress, setProgress] = useState<CurriculumProgress>(() => {
     return loadProgress() ?? createEmptyProgress();
   });
+  const [username, setUsername] = useState<string | null>(() => getStoredUsername());
   const hasMigrated = useRef(false);
+  const loadedCloudUser = useRef<string | null>(null);
+  const cloudSyncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Run migration on first mount
   useEffect(() => {
@@ -46,10 +59,54 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // On mount or username change: fetch cloud progress and merge
+  useEffect(() => {
+    if (!username || loadedCloudUser.current === username) return;
+    loadedCloudUser.current = username;
+
+    loadCloudProgress(username).then((cloudData) => {
+      if (cloudData) {
+        setProgress((prev) => {
+          const merged = mergeProgress(prev, cloudData);
+          saveProgress(merged);
+          return merged;
+        });
+      }
+    }).catch((err) => {
+      console.error('Failed to load cloud progress:', err);
+    });
+  }, [username]);
+
   // Save to localStorage on every change
   useEffect(() => {
     saveProgress(progress);
   }, [progress]);
+
+  // Debounced cloud sync — fire after every progress change
+  useEffect(() => {
+    if (!username) return;
+
+    if (cloudSyncTimer.current) {
+      clearTimeout(cloudSyncTimer.current);
+    }
+
+    cloudSyncTimer.current = setTimeout(() => {
+      saveCloudProgress(username, progress).catch((err) => {
+        console.error('Cloud sync failed:', err);
+      });
+    }, 2000);
+
+    return () => {
+      if (cloudSyncTimer.current) {
+        clearTimeout(cloudSyncTimer.current);
+      }
+    };
+  }, [progress, username]);
+
+  const applyMergedProgress = useCallback((merged: CurriculumProgress) => {
+    setProgress(merged);
+    saveProgress(merged);
+  }, []);
 
   const ensureTopicProgress = useCallback(
     (topicId: string): TopicProgress => {
@@ -139,6 +196,28 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const recordEssayDraft = useCallback(
+    (topicId: string, text: string) => {
+      setProgress((prev) => {
+        const topic = prev.topics[topicId] ?? { ...defaultTopicProgress };
+        // Only save draft text — don't mark as submitted or award XP
+        if (topic.essayText === text) return prev;
+        return {
+          ...prev,
+          topics: {
+            ...prev.topics,
+            [topicId]: {
+              ...topic,
+              essayText: text,
+              essayCharCount: text.length,
+            },
+          },
+        };
+      });
+    },
+    []
+  );
+
   const markRewardUnlocked = useCallback((topicId: string) => {
     setProgress((prev) => {
       const topic = prev.topics[topicId] ?? { ...defaultTopicProgress };
@@ -170,8 +249,12 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const value: ProgressContextValue = {
     progress,
     xp: progress.xp,
+    username,
+    setUsername,
+    applyMergedProgress,
     recordQuizAttempt,
     recordEssaySave,
+    recordEssayDraft,
     markRewardUnlocked,
     getTopicProgress,
     resetProgress,

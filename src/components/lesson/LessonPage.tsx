@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { getLesson, topics as topicsMap } from '../../data/curriculum';
+import { getLesson, topicMeta } from '../../data/curriculum';
 import { useProgress } from '../../hooks/useProgress';
 import LessonProgressBar from './LessonProgressBar';
 import TopicNode from './TopicNode';
@@ -29,14 +29,14 @@ export default function LessonPage() {
 
   // Build full topic list including coming-soon placeholders
   const allTopicEntries = lesson.topicIds.map((topicId) => {
-    const topic = topicsMap[topicId];
-    if (topic) {
+    const meta = topicMeta[topicId];
+    if (meta) {
       return {
-        topicId: topic.id,
-        slug: topic.slug,
-        title: topic.title,
-        status: topic.status,
-        icon: topic.heroIcons?.[0] || '📖',
+        topicId: meta.id,
+        slug: meta.slug,
+        title: meta.title,
+        status: meta.status,
+        icon: meta.heroIcons?.[0] || '\u{1F4D6}',
       };
     }
     // Topic data not yet created -- show as coming soon
@@ -48,7 +48,7 @@ export default function LessonPage() {
         .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
         .join(' '),
       status: 'coming-soon' as const,
-      icon: '📖',
+      icon: '\u{1F4D6}',
     };
   });
 

@@ -1,16 +1,67 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import type { Reward } from '../../data/types';
 import { useProgress } from '../../hooks/useProgress';
 import { useSound } from '../../hooks/useSound';
 import SketchfabEmbed from './SketchfabEmbed';
-import ChariotRace from './ChariotRace';
-import RoyalRoadMessenger from './RoyalRoadMessenger';
-import FireworksDesigner from './FireworksDesigner';
-import QuipuCodeBreaker from './QuipuCodeBreaker';
-import GoldCaravan from './GoldCaravan';
 import ConfettiEffect from '../common/ConfettiEffect';
+import FullscreenWrapper from '../common/FullscreenWrapper';
+
+const ChariotRace = lazy(() => import('./ChariotRace'));
+const RoyalRoadMessenger = lazy(() => import('./RoyalRoadMessenger'));
+const FireworksDesigner = lazy(() => import('./FireworksDesigner'));
+const QuipuCodeBreaker = lazy(() => import('./QuipuCodeBreaker'));
+const GoldCaravan = lazy(() => import('./GoldCaravan'));
+const CipherMachine = lazy(() => import('./CipherMachine'));
+const PerfectShot = lazy(() => import('./PerfectShot'));
+const FractalExplorer = lazy(() => import('./FractalExplorer'));
+const TessellationBuilder = lazy(() => import('./TessellationBuilder'));
+const NumberTranslator = lazy(() => import('./NumberTranslator'));
+const TreasureChest = lazy(() => import('./TreasureChest'));
+const PizzaParty = lazy(() => import('./PizzaParty'));
+const SpaceStation = lazy(() => import('./SpaceStation'));
+const LemonadeStand = lazy(() => import('./LemonadeStand'));
+const RoomDesigner = lazy(() => import('./RoomDesigner'));
+const AquariumBuilder = lazy(() => import('./AquariumBuilder'));
+const MysterySolver = lazy(() => import('./MysterySolver'));
+const TreasureMap = lazy(() => import('./TreasureMap'));
+const VirtualSprayCan = lazy(() => import('./VirtualSprayCan'));
+const IllusionBuilder = lazy(() => import('./IllusionBuilder'));
+const PatternMaker = lazy(() => import('./PatternMaker'));
+const FlipbookMaker = lazy(() => import('./FlipbookMaker'));
+const ArtDetective = lazy(() => import('./ArtDetective'));
+const CavePainter = lazy(() => import('./CavePainter'));
+const ComicCreator = lazy(() => import('./ComicCreator'));
+const SpiceTrade = lazy(() => import('./SpiceTrade'));
+const KitchenLab = lazy(() => import('./KitchenLab'));
+const StreetFoodStand = lazy(() => import('./StreetFoodStand'));
+const ChocolateFactory = lazy(() => import('./ChocolateFactory'));
+const FestivalCalendar = lazy(() => import('./FestivalCalendar'));
+const DumplingWrapper = lazy(() => import('./DumplingWrapper'));
+const NoodlePuller = lazy(() => import('./NoodlePuller'));
+const FrequencyExplorer = lazy(() => import('./FrequencyExplorer'));
+const BakingLab = lazy(() => import('./BakingLab'));
+const GamePhysicsSandbox = lazy(() => import('./GamePhysicsSandbox'));
+const CardTrickSimulator = lazy(() => import('./CardTrickSimulator'));
+const BridgeBuilder = lazy(() => import('./BridgeBuilder'));
+const PhotoCompositor = lazy(() => import('./PhotoCompositor'));
+const RhythmTimeline = lazy(() => import('./RhythmTimeline'));
+const FashionMixMatch = lazy(() => import('./FashionMixMatch'));
+const VirtualClayStudio = lazy(() => import('./VirtualClayStudio'));
+const BreadAtlas = lazy(() => import('./BreadAtlas'));
+const PizzaWorldTour = lazy(() => import('./PizzaWorldTour'));
+const IceCreamFactory = lazy(() => import('./IceCreamFactory'));
+const PickleMaker = lazy(() => import('./PickleMaker'));
+const TempleBuilder = lazy(() => import('./TempleBuilder'));
+
+function RewardLoading() {
+  return (
+    <div className="flex items-center justify-center py-12">
+      <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-[var(--topic-primary)]" />
+    </div>
+  );
+}
 
 interface RewardSectionProps {
   reward: Reward;
@@ -119,6 +170,8 @@ export default function RewardSection({ reward, topicId }: RewardSectionProps) {
 
         {/* Lock overlay or reward content */}
         {isUnlocked || canUnlock ? (
+          <Suspense fallback={<RewardLoading />}>
+          <FullscreenWrapper>
           <div>
             {/* Celebration message */}
             {justUnlocked && (
@@ -157,7 +210,173 @@ export default function RewardSection({ reward, topicId }: RewardSectionProps) {
             {reward.type === 'gold-caravan' && (
               <GoldCaravan />
             )}
+
+            {reward.type === 'cipher-machine' && (
+              <CipherMachine />
+            )}
+
+            {reward.type === 'perfect-shot' && (
+              <PerfectShot />
+            )}
+
+            {reward.type === 'fractal-explorer' && (
+              <FractalExplorer />
+            )}
+
+            {reward.type === 'tessellation-builder' && (
+              <TessellationBuilder />
+            )}
+
+            {reward.type === 'number-translator' && (
+              <NumberTranslator />
+            )}
+
+            {reward.type === 'treasure-chest' && (
+              <TreasureChest />
+            )}
+
+            {reward.type === 'pizza-party' && (
+              <PizzaParty />
+            )}
+
+            {reward.type === 'space-station' && (
+              <SpaceStation />
+            )}
+
+            {reward.type === 'lemonade-stand' && (
+              <LemonadeStand />
+            )}
+
+            {reward.type === 'room-designer' && (
+              <RoomDesigner />
+            )}
+
+            {reward.type === 'aquarium-builder' && (
+              <AquariumBuilder />
+            )}
+
+            {reward.type === 'mystery-solver' && (
+              <MysterySolver />
+            )}
+
+            {reward.type === 'treasure-map' && (
+              <TreasureMap />
+            )}
+
+            {reward.type === 'virtual-spray-can' && (
+              <VirtualSprayCan />
+            )}
+
+            {reward.type === 'illusion-builder' && (
+              <IllusionBuilder />
+            )}
+
+            {reward.type === 'pattern-maker' && (
+              <PatternMaker />
+            )}
+
+            {reward.type === 'flipbook-maker' && (
+              <FlipbookMaker />
+            )}
+
+            {reward.type === 'art-detective' && (
+              <ArtDetective />
+            )}
+
+            {reward.type === 'cave-painter' && (
+              <CavePainter />
+            )}
+
+            {reward.type === 'comic-creator' && (
+              <ComicCreator />
+            )}
+
+            {reward.type === 'spice-trade' && (
+              <SpiceTrade />
+            )}
+
+            {reward.type === 'kitchen-lab' && (
+              <KitchenLab />
+            )}
+
+            {reward.type === 'street-food-stand' && (
+              <StreetFoodStand />
+            )}
+
+            {reward.type === 'chocolate-factory' && (
+              <ChocolateFactory />
+            )}
+
+            {reward.type === 'festival-calendar' && (
+              <FestivalCalendar />
+            )}
+
+            {reward.type === 'dumpling-wrapper' && (
+              <DumplingWrapper />
+            )}
+
+            {reward.type === 'noodle-puller' && (
+              <NoodlePuller />
+            )}
+
+            {reward.type === 'frequency-explorer' && (
+              <FrequencyExplorer />
+            )}
+
+            {reward.type === 'baking-lab' && (
+              <BakingLab />
+            )}
+
+            {reward.type === 'game-physics-sandbox' && (
+              <GamePhysicsSandbox />
+            )}
+
+            {reward.type === 'card-trick-simulator' && (
+              <CardTrickSimulator />
+            )}
+
+            {reward.type === 'bridge-builder' && (
+              <BridgeBuilder />
+            )}
+
+            {reward.type === 'photo-compositor' && (
+              <PhotoCompositor />
+            )}
+
+            {reward.type === 'rhythm-timeline' && (
+              <RhythmTimeline />
+            )}
+
+            {reward.type === 'fashion-mix-match' && (
+              <FashionMixMatch />
+            )}
+
+            {reward.type === 'virtual-clay-studio' && (
+              <VirtualClayStudio />
+            )}
+
+            {reward.type === 'bread-atlas' && (
+              <BreadAtlas />
+            )}
+
+            {reward.type === 'pizza-world-tour' && (
+              <PizzaWorldTour />
+            )}
+
+            {reward.type === 'ice-cream-factory' && (
+              <IceCreamFactory />
+            )}
+
+            {reward.type === 'pickle-maker' && (
+              <PickleMaker />
+            )}
+
+            {reward.type === 'temple-builder' && (
+              <TempleBuilder />
+            )}
           </div>
+          </FullscreenWrapper>
+          </Suspense>
         ) : (
           <div className="relative rounded-xl bg-gray-100 p-8 text-center overflow-hidden">
             {/* Lock overlay */}
