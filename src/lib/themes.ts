@@ -1037,6 +1037,71 @@ export const khmerEmpireTheme: TopicTheme = {
     'linear-gradient(90deg, #C9A227, #2E5339, #C9A227)',
 };
 
+// ─── Indian Empires themes ────────────────────────────────────────
+
+export const indusValleyTheme: TopicTheme = {
+  id: 'indus-valley',
+  colors: {
+    gold: '#C9A227',
+    primary: '#C84B31',
+    secondary: '#E07B5A',
+    cream: '#FFF5F0',
+    accent: '#2D82B7',
+    darkBrown: '#5A2D0C',
+    sand: '#F0D5C0',
+    bronze: '#CD7F32',
+    goldLight: '#F5E6A3',
+  },
+  heroGradient:
+    'linear-gradient(180deg, rgba(200, 75, 49, 0.95) 0%, rgba(224, 123, 90, 0.85) 50%, rgba(45, 130, 183, 0.9) 100%)',
+  navGradient:
+    'linear-gradient(90deg, #C84B31, #E07B5A, #C84B31)',
+  sectionBorderGradient:
+    'linear-gradient(90deg, #C9A227, #C84B31, #C9A227)',
+};
+
+export const guptaEmpireTheme: TopicTheme = {
+  id: 'gupta-empire',
+  colors: {
+    gold: '#D4A017',
+    primary: '#D4A017',
+    secondary: '#E8751A',
+    cream: '#FFFAF0',
+    accent: '#8B6914',
+    darkBrown: '#5A3E1B',
+    sand: '#F5E6C8',
+    bronze: '#CD7F32',
+    goldLight: '#FFEAA7',
+  },
+  heroGradient:
+    'linear-gradient(180deg, rgba(212, 160, 23, 0.95) 0%, rgba(232, 117, 26, 0.85) 50%, rgba(90, 62, 27, 0.9) 100%)',
+  navGradient:
+    'linear-gradient(90deg, #D4A017, #E8751A, #D4A017)',
+  sectionBorderGradient:
+    'linear-gradient(90deg, #D4A017, #8B6914, #D4A017)',
+};
+
+export const mughalEmpireTheme: TopicTheme = {
+  id: 'mughal-empire',
+  colors: {
+    gold: '#C9A227',
+    primary: '#B22222',
+    secondary: '#D44D4D',
+    cream: '#FFF8F5',
+    accent: '#F5F5F5',
+    darkBrown: '#5A1A1A',
+    sand: '#F0D5D5',
+    bronze: '#CD7F32',
+    goldLight: '#F5E6A3',
+  },
+  heroGradient:
+    'linear-gradient(180deg, rgba(178, 34, 34, 0.95) 0%, rgba(212, 77, 77, 0.85) 50%, rgba(90, 26, 26, 0.9) 100%)',
+  navGradient:
+    'linear-gradient(90deg, #B22222, #D44D4D, #B22222)',
+  sectionBorderGradient:
+    'linear-gradient(90deg, #C9A227, #B22222, #C9A227)',
+};
+
 // ─── Money Matters themes ─────────────────────────────────────────
 
 export const whatIsMoneyTheme: TopicTheme = {
@@ -1194,6 +1259,9 @@ export const themes: Record<string, TopicTheme> = {
   'inca-empire': incaEmpireTheme,
   'mali-empire': maliEmpireTheme,
   'khmer-empire': khmerEmpireTheme,
+  'indus-valley': indusValleyTheme,
+  'gupta-empire': guptaEmpireTheme,
+  'mughal-empire': mughalEmpireTheme,
   // Fun Math
   'secret-codes': secretCodesTheme,
   'math-in-sports': mathInSportsTheme,

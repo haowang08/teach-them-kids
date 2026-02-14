@@ -61,6 +61,9 @@ const SmartShopperChallenge = lazy(() => import('./SmartShopperChallenge'));
 const CompoundGrowthGarden = lazy(() => import('./CompoundGrowthGarden'));
 const BankManagerSim = lazy(() => import('./BankManagerSim'));
 const KindnessRipple = lazy(() => import('./KindnessRipple'));
+const CityPlanner = lazy(() => import('./CityPlanner'));
+const ZerosJourney = lazy(() => import('./ZerosJourney'));
+const TajArchitect = lazy(() => import('./TajArchitect'));
 
 function RewardLoading() {
   return (
@@ -408,6 +411,18 @@ export default function RewardSection({ reward, topicId }: RewardSectionProps) {
 
             {reward.type === 'kindness-ripple' && (
               <KindnessRipple />
+            )}
+
+            {reward.type === 'city-planner' && (
+              <CityPlanner />
+            )}
+
+            {reward.type === 'zeros-journey' && (
+              <ZerosJourney />
+            )}
+
+            {reward.type === 'taj-architect' && (
+              <TajArchitect />
             )}
           </div>
           </FullscreenWrapper>

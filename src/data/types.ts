@@ -178,7 +178,10 @@ export interface Reward {
     | 'compound-growth-garden'
     | 'bank-manager-sim'
     | 'kindness-ripple'
-    | 'piggy-bank-planner';
+    | 'piggy-bank-planner'
+    | 'city-planner'
+    | 'zeros-journey'
+    | 'taj-architect';
   embedUrl?: string;
   embedTitle?: string;
   celebrationMessage: string;
