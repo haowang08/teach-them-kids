@@ -1,31 +1,60 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+/**
+ * Voice names ordered by naturalness / warmth.
+ * Enhanced/Premium macOS voices and high-quality Google voices come first.
+ * The picker also prefers "(Enhanced)" or "(Premium)" suffixed variants
+ * of any match automatically.
+ */
 const PREFERRED_VOICES = [
-  'Samantha',
-  'Alex',
-  'Daniel',
-  'Karen',
-  'Moira',
-  'Tessa',
+  // macOS high-quality (available when downloaded in System Settings → Accessibility → Spoken Content)
+  'Samantha (Enhanced)',
+  'Zoe (Enhanced)',
+  'Evan (Enhanced)',
+  'Karen (Enhanced)',
+  'Daniel (Enhanced)',
+  'Moira (Enhanced)',
+  'Tessa (Enhanced)',
+  'Samantha (Premium)',
+  'Zoe (Premium)',
+  // Google (Chrome / Android)
   'Google US English',
   'Google UK English Female',
   'Google UK English Male',
+  // Microsoft (Edge / Windows)
+  'Microsoft Aria Online (Natural)',
+  'Microsoft Jenny Online (Natural)',
   'Microsoft Zira',
   'Microsoft David',
+  // macOS base (still decent)
+  'Samantha',
+  'Karen',
+  'Daniel',
+  'Moira',
+  'Tessa',
 ];
 
 function pickBestVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
-  // Try preferred voices first
+  const english = voices.filter(
+    (v) => v.lang.startsWith('en-') || v.lang === 'en',
+  );
+
+  // Try preferred voices in order
   for (const name of PREFERRED_VOICES) {
-    const match = voices.find((v) => v.name.includes(name));
+    const match = english.find((v) => v.name === name);
     if (match) return match;
   }
-  // Fall back to any English voice
-  const english = voices.find(
-    (v) => v.lang.startsWith('en-') || v.lang === 'en'
+
+  // If none matched exactly, prefer any Enhanced/Premium English voice
+  const enhanced = english.find(
+    (v) => v.name.includes('(Enhanced)') || v.name.includes('(Premium)'),
   );
-  if (english) return english;
-  // Fall back to first available
+  if (enhanced) return enhanced;
+
+  // Fall back to any English voice
+  if (english.length > 0) return english[0];
+
+  // Last resort
   return voices[0] ?? null;
 }
 
