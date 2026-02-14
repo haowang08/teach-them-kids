@@ -332,7 +332,7 @@ export default function BankManagerSim() {
                 </div>
               );
             })}
-            {!anyApprovable && !decided && (
+            {!anyApprovable && !decided && md.loanRequests.some(l => l.approved === null) && (
               <div style={{ fontSize: 13, color: C.red, marginTop: 8 }}>{"\u26A0\uFE0F"} Some loans cannot be approved -- reserves would drop below 20%.</div>
             )}
           </div>

@@ -5,6 +5,8 @@ import { useState, useCallback } from 'react';
 // ============================================
 
 type GamePhase = 'intro' | 'barter' | 'commodity' | 'coins' | 'complete';
+type CommodityStep = 'sell' | 'shortage' | 'jobs' | 'buy';
+type CoinsStep = 'distribute' | 'sell' | 'buy' | 'inflation' | 'help' | 'buy2';
 
 interface Villager {
   id: number;
@@ -23,6 +25,13 @@ interface TradeRecord {
   item: string;
 }
 
+interface Job {
+  id: number;
+  name: string;
+  emoji: string;
+  pay: number;
+}
+
 // ============================================
 // CONSTANTS
 // ============================================
@@ -39,6 +48,7 @@ const COLORS = {
   highlight: '#3D3D5C',
   error: '#C62828',
   shell: '#8D6E63',
+  purple: '#7B1FA2',
 };
 
 const ITEMS = [
@@ -48,12 +58,24 @@ const ITEMS = [
   { name: 'Cloth', emoji: '\uD83E\uDDF5' },
 ];
 
-const COIN_PRICES: Record<string, number> = {
-  Chicken: 3,
-  Wheat: 3,
-  Pottery: 3,
-  Cloth: 3,
-};
+// Shell money: variable sell/buy prices create shortage problem
+const SHELL_SELL: Record<string, number> = { Chicken: 3, Wheat: 2, Pottery: 6, Cloth: 4 };
+const SHELL_BUY: Record<string, number> = { Chicken: 4, Wheat: 3, Pottery: 7, Cloth: 5 };
+
+// Market jobs to earn extra shells
+const JOBS: Job[] = [
+  { id: 0, name: 'Carry goods at dock', emoji: '\u2693', pay: 2 },
+  { id: 1, name: 'Sort spices at market', emoji: '\uD83C\uDF36\uFE0F', pay: 2 },
+  { id: 2, name: 'Weave baskets to sell', emoji: '\uD83E\uDDFA', pay: 3 },
+  { id: 3, name: 'Catch fish at river', emoji: '\uD83D\uDC1F', pay: 2 },
+  { id: 4, name: 'Carry water jugs', emoji: '\uD83D\uDCA7', pay: 1 },
+];
+
+// Gold coins: unequal distribution + inflation
+const COIN_SELL: Record<string, number> = { Chicken: 3, Wheat: 2, Pottery: 5, Cloth: 4 };
+const COIN_BUY_BASE: Record<string, number> = { Chicken: 5, Wheat: 3, Pottery: 8, Cloth: 6 };
+const KING_COINS: Record<number, number> = { 0: 2, 1: 7, 2: 3, 3: 1 };
+const KING_TITLES: Record<number, string> = { 0: 'Farmer', 1: 'Merchant', 2: 'Weaver', 3: 'Shepherd' };
 
 const PHASE_LABELS: Record<GamePhase, string> = {
   intro: 'Welcome',
@@ -96,13 +118,18 @@ export default function BarterTownBuilder() {
   const [commodityDays, setCommodityDays] = useState(0);
   const [coinDays, setCoinDays] = useState(0);
 
-  // Commodity money phase
+  // Commodity money phase - expanded
   const [shells, setShells] = useState<Record<number, number>>({});
-  const [commodityStep, setCommodityStep] = useState<'sell' | 'buy'>('sell');
+  const [commodityStep, setCommodityStep] = useState<CommodityStep>('sell');
+  const [selectedJob, setSelectedJob] = useState<number | null>(null);
+  const [jobsTaken, setJobsTaken] = useState<Record<number, number>>({}); // jobId -> villagerId
 
-  // Coins phase
+  // Coins phase - expanded
   const [wallets, setWallets] = useState<Record<number, number>>({});
-  const [coinsStep, setCoinsStep] = useState<'sell' | 'buy'>('sell');
+  const [coinsStep, setCoinsStep] = useState<CoinsStep>('distribute');
+  const [coinBuyPrices, setCoinBuyPrices] = useState<Record<string, number>>({ ...COIN_BUY_BASE });
+  const [coinsBuyAttempted, setCoinsBuyAttempted] = useState<Record<number, boolean>>({});
+  const [selectedGiver, setSelectedGiver] = useState<number | null>(null);
 
   const [fadeIn, setFadeIn] = useState(true);
 
@@ -137,7 +164,9 @@ export default function BarterTownBuilder() {
     setDayCount(0);
     setShells({ 0: 0, 1: 0, 2: 0, 3: 0 });
     setCommodityStep('sell');
-    setMessage('Now everyone can sell their goods for cowrie shells \uD83D\uDC1A! Click a villager to sell their item.');
+    setSelectedJob(null);
+    setJobsTaken({});
+    setMessage('Everyone sells their goods for cowrie shells \uD83D\uDC1A! Items have different values - click a villager to sell.');
     setMessageType('info');
     transitionTo('commodity');
   }, [dayCount, transitionTo]);
@@ -150,8 +179,11 @@ export default function BarterTownBuilder() {
     setTradeLog([]);
     setDayCount(0);
     setWallets({ 0: 0, 1: 0, 2: 0, 3: 0 });
-    setCoinsStep('sell');
-    setMessage('Gold coins \uD83E\uDE99 have standard values! Click a villager to sell their item at market price.');
+    setCoinsStep('distribute');
+    setCoinBuyPrices({ ...COIN_BUY_BASE });
+    setCoinsBuyAttempted({});
+    setSelectedGiver(null);
+    setMessage('The king is distributing gold coins to the village... but not equally!');
     setMessageType('info');
     transitionTo('coins');
   }, [dayCount, transitionTo]);
@@ -175,7 +207,12 @@ export default function BarterTownBuilder() {
     setShells({});
     setWallets({});
     setCommodityStep('sell');
-    setCoinsStep('sell');
+    setCoinsStep('distribute');
+    setSelectedJob(null);
+    setJobsTaken({});
+    setCoinBuyPrices({ ...COIN_BUY_BASE });
+    setCoinsBuyAttempted({});
+    setSelectedGiver(null);
     setFadeIn(true);
   }, []);
 
@@ -252,7 +289,7 @@ export default function BarterTownBuilder() {
   }, [selectedVillager, villagers, dayCount]);
 
   // ----------------------------------------
-  // COMMODITY MONEY LOGIC
+  // COMMODITY MONEY LOGIC (upgraded)
   // ----------------------------------------
 
   const handleCommodityClick = useCallback((clickedId: number) => {
@@ -264,14 +301,13 @@ export default function BarterTownBuilder() {
         setMessageType('info');
         return;
       }
-      // Sell item for shells
       setDayCount(prev => prev + 1);
-      const shellValue = 5; // Each item worth 5 shells
+      const shellValue = SHELL_SELL[v.has];
       const newShells = { ...shells, [clickedId]: (shells[clickedId] || 0) + shellValue };
       setShells(newShells);
 
       const newVillagers = [...villagers];
-      newVillagers[clickedId] = { ...v, satisfied: true }; // Mark as sold
+      newVillagers[clickedId] = { ...v, satisfied: true };
       setVillagers(newVillagers);
 
       setTradeLog(prev => [...prev, {
@@ -282,25 +318,33 @@ export default function BarterTownBuilder() {
       setMessage(`${v.name} sold ${v.hasEmoji} ${v.has} for \uD83D\uDC1A ${shellValue} shells! (Day ${dayCount + 1})`);
       setMessageType('success');
 
-      // Check if all have sold
       const allSold = newVillagers.every(vl => vl.satisfied);
       if (allSold) {
-        setCommodityStep('buy');
-        setMessage('Everyone has shells now! Click each villager to buy what they want.');
-        setMessageType('info');
-        // Reset satisfied for buying phase
+        // Check for shortages before buying
+        const hasShortages = newVillagers.some((vl, i) => {
+          const buyPrice = SHELL_BUY[vl.wants];
+          return (newShells[i] || 0) < buyPrice;
+        });
         setVillagers(newVillagers.map(vl => ({ ...vl, satisfied: false })));
+        if (hasShortages) {
+          setCommodityStep('shortage');
+          setMessage('Uh oh! Some villagers don\'t have enough shells. Different items have different prices!');
+          setMessageType('error');
+        } else {
+          setCommodityStep('buy');
+          setMessage('Everyone has enough shells! Click each villager to buy what they want.');
+          setMessageType('info');
+        }
       }
-    } else {
-      // Buy phase
+    } else if (commodityStep === 'buy') {
       if (v.satisfied) {
         setMessage(`${v.name} already bought what they wanted!`);
         setMessageType('info');
         return;
       }
-      const shellCost = 5;
+      const shellCost = SHELL_BUY[v.wants];
       if ((shells[clickedId] || 0) < shellCost) {
-        setMessage(`${v.name} doesn't have enough shells!`);
+        setMessage(`${v.name} needs \uD83D\uDC1A ${shellCost} but only has \uD83D\uDC1A ${shells[clickedId] || 0}!`);
         setMessageType('error');
         return;
       }
@@ -323,15 +367,65 @@ export default function BarterTownBuilder() {
 
       const allDone = newVillagers.every(vl => vl.satisfied);
       if (allDone) {
-        setMessage(`All trades complete in ${dayCount + 1} days! Much faster with shell money!`);
+        setMessage(`All trades complete in ${dayCount + 1} days! Shell money works, but some had to work extra jobs to afford things.`);
         setMessageType('success');
       }
     }
   }, [villagers, shells, commodityStep, dayCount]);
 
+  // Assign a job to a villager with a shortage
+  const handleJobAssign = useCallback((jobId: number, villagerId: number) => {
+    const newJobsTaken = { ...jobsTaken, [jobId]: villagerId };
+    setJobsTaken(newJobsTaken);
+
+    const job = JOBS[jobId];
+    const v = villagers[villagerId];
+    setSelectedJob(null);
+    setMessage(`${v.name} will "${job.name.toLowerCase()}" for \uD83D\uDC1A ${job.pay} shells!`);
+    setMessageType('success');
+
+    // Calculate total job earnings per villager
+    const jobEarnings: Record<number, number> = {};
+    for (const [jId, vId] of Object.entries(newJobsTaken)) {
+      const j = JOBS[Number(jId)];
+      jobEarnings[vId] = (jobEarnings[vId] || 0) + j.pay;
+    }
+
+    // Check if all shortages now covered
+    const allCovered = villagers.every((vl, i) => {
+      const buyPrice = SHELL_BUY[vl.wants];
+      const totalShells = (shells[i] || 0) + (jobEarnings[i] || 0);
+      return totalShells >= buyPrice;
+    });
+
+    if (allCovered) {
+      // Apply all job earnings
+      const newShells = { ...shells };
+      for (const [vId, earnings] of Object.entries(jobEarnings)) {
+        newShells[Number(vId)] = (newShells[Number(vId)] || 0) + earnings;
+      }
+      setShells(newShells);
+      setDayCount(prev => prev + Object.keys(newJobsTaken).length);
+      setCommodityStep('buy');
+      setTimeout(() => {
+        setMessage('Jobs complete! Everyone earned enough shells. Now click each villager to buy!');
+        setMessageType('success');
+      }, 600);
+    }
+  }, [jobsTaken, villagers, shells]);
+
   // ----------------------------------------
-  // COINS LOGIC
+  // COINS LOGIC (upgraded: inequality + inflation)
   // ----------------------------------------
+
+  const handleCoinsDistribute = useCallback(() => {
+    const newWallets: Record<number, number> = {};
+    villagers.forEach((_, i) => { newWallets[i] = KING_COINS[i]; });
+    setWallets(newWallets);
+    setCoinsStep('sell');
+    setMessage('Coins distributed! Notice the unequal amounts. Click each villager to sell their goods.');
+    setMessageType('info');
+  }, [villagers]);
 
   const handleCoinsClick = useCallback((clickedId: number) => {
     const v = villagers[clickedId];
@@ -342,9 +436,8 @@ export default function BarterTownBuilder() {
         setMessageType('info');
         return;
       }
-      // Sell item for coins at set price
       setDayCount(prev => prev + 1);
-      const coinValue = COIN_PRICES[v.has];
+      const coinValue = COIN_SELL[v.has];
       const newWallets = { ...wallets, [clickedId]: (wallets[clickedId] || 0) + coinValue };
       setWallets(newWallets);
 
@@ -357,52 +450,158 @@ export default function BarterTownBuilder() {
         to: 'Market',
         item: `${v.hasEmoji} -> \uD83E\uDE99 x${coinValue}`,
       }]);
-      setMessage(`${v.name} sold ${v.hasEmoji} ${v.has} for \uD83E\uDE99 ${coinValue} gold coins! (Day ${dayCount + 1})`);
+      setMessage(`${v.name} sold ${v.hasEmoji} ${v.has} for \uD83E\uDE99 ${coinValue} coins! (Day ${dayCount + 1})`);
       setMessageType('success');
 
       const allSold = newVillagers.every(vl => vl.satisfied);
       if (allSold) {
         setCoinsStep('buy');
-        setMessage('Everyone has coins! Click each villager to buy what they want at the listed price.');
+        setMessage('Everyone sold! Now try buying - click each villager. Can everyone afford what they want?');
         setMessageType('info');
         setVillagers(newVillagers.map(vl => ({ ...vl, satisfied: false })));
+        setCoinsBuyAttempted({});
       }
-    } else {
+    } else if (coinsStep === 'buy') {
+      if (v.satisfied || coinsBuyAttempted[clickedId]) {
+        setMessage(`${v.name} already ${v.satisfied ? 'bought' : 'tried'}!`);
+        setMessageType('info');
+        return;
+      }
+      const coinCost = coinBuyPrices[v.wants];
+      const has = wallets[clickedId] || 0;
+      const newAttempted = { ...coinsBuyAttempted, [clickedId]: true };
+      setCoinsBuyAttempted(newAttempted);
+
+      if (has >= coinCost) {
+        setDayCount(prev => prev + 1);
+        const newWallets = { ...wallets, [clickedId]: has - coinCost };
+        setWallets(newWallets);
+        const newVillagers = [...villagers];
+        newVillagers[clickedId] = { ...v, satisfied: true };
+        setVillagers(newVillagers);
+        setTradeLog(prev => [...prev, {
+          from: 'Market',
+          to: v.name,
+          item: `\uD83E\uDE99 x${coinCost} -> ${v.wantsEmoji}`,
+        }]);
+        setMessage(`${v.name} bought ${v.wantsEmoji} ${v.wants} for \uD83E\uDE99 ${coinCost}!`);
+        setMessageType('success');
+      } else {
+        setMessage(`${v.name} can't afford ${v.wantsEmoji} ${v.wants}! Has \uD83E\uDE99 ${has} but costs \uD83E\uDE99 ${coinCost}. The king gave ${KING_TITLES[clickedId]}s fewer coins...`);
+        setMessageType('error');
+      }
+    } else if (coinsStep === 'buy2') {
       if (v.satisfied) {
         setMessage(`${v.name} already bought what they wanted!`);
         setMessageType('info');
         return;
       }
-      const coinCost = COIN_PRICES[v.wants];
-      if ((wallets[clickedId] || 0) < coinCost) {
-        setMessage(`${v.name} needs \uD83E\uDE99 ${coinCost} but only has \uD83E\uDE99 ${wallets[clickedId] || 0}!`);
+      const coinCost = coinBuyPrices[v.wants];
+      const has = wallets[clickedId] || 0;
+      if (has < coinCost) {
+        setMessage(`${v.name} still needs \uD83E\uDE99 ${coinCost - has} more coins!`);
         setMessageType('error');
         return;
       }
-
       setDayCount(prev => prev + 1);
-      const newWallets = { ...wallets, [clickedId]: (wallets[clickedId] || 0) - coinCost };
+      const newWallets = { ...wallets, [clickedId]: has - coinCost };
       setWallets(newWallets);
-
       const newVillagers = [...villagers];
       newVillagers[clickedId] = { ...v, satisfied: true };
       setVillagers(newVillagers);
-
       setTradeLog(prev => [...prev, {
         from: 'Market',
         to: v.name,
-        item: `\uD83E\uDE99 x${coinCost} -> ${v.wantsEmoji}`,
+        item: `\uD83E\uDE99 x${coinCost} -> ${v.wantsEmoji} (inflated)`,
       }]);
-      setMessage(`${v.name} bought ${v.wantsEmoji} ${v.wants} for \uD83E\uDE99 ${coinCost} coins! (Day ${dayCount + 1})`);
+      setMessage(`${v.name} bought ${v.wantsEmoji} ${v.wants} for \uD83E\uDE99 ${coinCost} (inflated price)!`);
       setMessageType('success');
 
       const allDone = newVillagers.every(vl => vl.satisfied);
       if (allDone) {
-        setMessage(`All trades complete in ${dayCount + 1} days! Coins with prices make trading super efficient!`);
+        setMessage(`All trades complete in ${dayCount + 1} days! But inequality and inflation made it much harder for some.`);
         setMessageType('success');
       }
     }
-  }, [villagers, wallets, coinsStep, dayCount]);
+  }, [villagers, wallets, coinsStep, coinsBuyAttempted, coinBuyPrices, dayCount]);
+
+  // Inflation: double all wallets and prices
+  const handleInflation = useCallback(() => {
+    const newWallets: Record<number, number> = {};
+    for (const [id, amt] of Object.entries(wallets)) {
+      newWallets[Number(id)] = amt * 2;
+    }
+    setWallets(newWallets);
+    const newPrices: Record<string, number> = {};
+    for (const [item, price] of Object.entries(coinBuyPrices)) {
+      newPrices[item] = price * 2;
+    }
+    setCoinBuyPrices(newPrices);
+    setCoinsStep('help');
+    setMessage('Prices doubled! Now the rich must help the poor. Click a rich villager, then a poor one to share coins.');
+    setMessageType('info');
+    setSelectedGiver(null);
+  }, [wallets, coinBuyPrices]);
+
+  // Help: rich villager shares with poor villager
+  const handleHelpClick = useCallback((clickedId: number) => {
+    const v = villagers[clickedId];
+    const has = wallets[clickedId] || 0;
+    const cost = coinBuyPrices[v.wants];
+    const isRich = v.satisfied && has > 0;
+    const isPoor = !v.satisfied && has < cost;
+
+    if (selectedGiver === null) {
+      // Select a giver (rich/satisfied villager with surplus)
+      if (!isRich) {
+        setMessage(`${v.name} ${v.satisfied ? 'has no coins to share' : 'needs help, not a giver'}! Click a rich villager first.`);
+        setMessageType('error');
+        return;
+      }
+      setSelectedGiver(clickedId);
+      setMessage(`${v.name} (\uD83E\uDE99 ${has}) will share. Now click a villager who needs help.`);
+      setMessageType('info');
+    } else if (selectedGiver === clickedId) {
+      setSelectedGiver(null);
+      setMessage('Cancelled. Click a rich villager to share coins.');
+      setMessageType('info');
+    } else {
+      // Assign receiver
+      if (!isPoor) {
+        setMessage(`${v.name} doesn't need help! Click someone who can't afford their item.`);
+        setMessageType('error');
+        setSelectedGiver(null);
+        return;
+      }
+      const deficit = cost - has;
+      const giverHas = wallets[selectedGiver] || 0;
+      const transfer = Math.min(giverHas, deficit);
+      const giver = villagers[selectedGiver];
+
+      const newWallets = {
+        ...wallets,
+        [selectedGiver]: giverHas - transfer,
+        [clickedId]: has + transfer,
+      };
+      setWallets(newWallets);
+      setSelectedGiver(null);
+      setMessage(`${giver.name} shared \uD83E\uDE99 ${transfer} with ${v.name}! ${has + transfer >= cost ? `${v.name} can now afford ${v.wantsEmoji}!` : `${v.name} still needs \uD83E\uDE99 ${cost - (has + transfer)} more.`}`);
+      setMessageType('success');
+
+      // Check if all poor villagers can now afford
+      const allCanBuy = villagers.every((vl, i) => {
+        if (vl.satisfied) return true;
+        return (newWallets[i] || 0) >= coinBuyPrices[vl.wants];
+      });
+      if (allCanBuy) {
+        setCoinsStep('buy2');
+        setTimeout(() => {
+          setMessage('Everyone can afford what they need now! Click the remaining villagers to buy.');
+          setMessageType('success');
+        }, 800);
+      }
+    }
+  }, [villagers, wallets, coinBuyPrices, selectedGiver]);
 
   // ----------------------------------------
   // CHECK COMPLETION
@@ -702,15 +901,27 @@ export default function BarterTownBuilder() {
   // ----------------------------------------
 
   if (phase === 'commodity') {
+    const stepLabel = commodityStep === 'sell' ? 'Selling' : commodityStep === 'shortage' ? 'Problem!' : commodityStep === 'jobs' ? 'Market Jobs' : 'Buying';
+    const stepDesc = commodityStep === 'sell'
+      ? 'Click each villager to sell their goods. Items have different values!'
+      : commodityStep === 'shortage'
+        ? 'Some villagers can\'t afford what they want!'
+        : commodityStep === 'jobs'
+          ? 'Assign market jobs to villagers who need more shells.'
+          : 'Everyone can afford their items now. Click to buy!';
+
+    // Calculate job earnings per villager (for display during jobs step)
+    const jobEarnings: Record<number, number> = {};
+    for (const [jId, vId] of Object.entries(jobsTaken)) {
+      const j = JOBS[Number(jId)];
+      jobEarnings[vId] = (jobEarnings[vId] || 0) + j.pay;
+    }
+
     return (
       <div style={containerStyle}>
         {renderProgress()}
         <h2 style={titleStyle}>{'\uD83D\uDC1A'} Shell Money Era</h2>
-        <p style={subtitleStyle}>
-          {commodityStep === 'sell'
-            ? 'Everyone sells their goods for cowrie shells at the market!'
-            : 'Now everyone buys what they want with their shells!'}
-        </p>
+        <p style={subtitleStyle}>{stepDesc}</p>
 
         <div style={{
           display: 'flex',
@@ -725,32 +936,237 @@ export default function BarterTownBuilder() {
             {'\u{23F3}'} Days: <strong style={{ color: COLORS.gold }}>{dayCount}</strong>
           </span>
           <span style={{ fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)', color: COLORS.shell, fontWeight: 'bold' }}>
-            Phase: {commodityStep === 'sell' ? 'Selling' : 'Buying'}
+            {stepLabel}
           </span>
           <span style={{ fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)', color: COLORS.textDim }}>
             Barter took: <strong style={{ color: COLORS.error }}>{barterDays} days</strong>
           </span>
         </div>
 
+        {/* Sell/Buy price reference */}
+        {(commodityStep === 'sell' || commodityStep === 'buy') && (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 'clamp(4px, 1vw, 8px)',
+            marginBottom: 10,
+            flexWrap: 'wrap',
+          }}>
+            {ITEMS.map(item => (
+              <div key={item.name} style={{
+                background: 'rgba(141,110,99,0.15)',
+                border: '1px solid rgba(141,110,99,0.3)',
+                borderRadius: 8,
+                padding: '3px 8px',
+                fontSize: 'clamp(0.55rem, 1.4vw, 0.7rem)',
+                color: COLORS.shell,
+              }}>
+                {item.emoji} {commodityStep === 'sell' ? `sell ${SHELL_SELL[item.name]}` : `buy ${SHELL_BUY[item.name]}`}
+              </div>
+            ))}
+          </div>
+        )}
+
         {message && <div style={messageStyle}>{message}</div>}
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 'clamp(8px, 2vw, 12px)',
-          marginBottom: 16,
-        }}>
-          {villagers.map(v => renderVillagerCard(v, handleCommodityClick,
+        {/* SELL & BUY steps: villager grid */}
+        {(commodityStep === 'sell' || commodityStep === 'buy') && (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: 'clamp(8px, 2vw, 12px)',
+            marginBottom: 16,
+          }}>
+            {villagers.map(v => renderVillagerCard(v, handleCommodityClick,
+              <div style={{ marginTop: 6, fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)', color: COLORS.shell, fontWeight: 'bold' }}>
+                {'\uD83D\uDC1A'} {shells[v.id] || 0} shells
+                {commodityStep === 'buy' && !v.satisfied && (
+                  <span style={{ fontSize: 'clamp(0.55rem, 1.4vw, 0.65rem)', color: COLORS.textDim, fontWeight: 'normal' }}>
+                    {' '}(need {SHELL_BUY[v.wants]})
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* SHORTAGE step: show who can't afford what */}
+        {commodityStep === 'shortage' && (
+          <div style={{ marginBottom: 16 }}>
             <div style={{
-              marginTop: 6,
-              fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)',
-              color: COLORS.shell,
-              fontWeight: 'bold',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: 'clamp(8px, 2vw, 12px)',
+              marginBottom: 14,
             }}>
-              {'\uD83D\uDC1A'} {shells[v.id] || 0} shells
+              {villagers.map(v => {
+                const has = shells[v.id] || 0;
+                const needs = SHELL_BUY[v.wants];
+                const short = Math.max(0, needs - has);
+                return (
+                  <div key={v.id} style={{
+                    ...cardStyle(false, short === 0),
+                    cursor: 'default',
+                  }}>
+                    <div style={{ fontSize: 'clamp(1.3rem, 4vw, 1.8rem)', marginBottom: 4 }}>{v.emoji}</div>
+                    <div style={{ fontSize: 'clamp(0.75rem, 2vw, 0.9rem)', fontWeight: 'bold', color: COLORS.textBright, marginBottom: 4 }}>{v.name}</div>
+                    <div style={{ fontSize: 'clamp(0.65rem, 1.6vw, 0.78rem)', color: COLORS.shell }}>
+                      Has: {'\uD83D\uDC1A'} {has} shells
+                    </div>
+                    <div style={{ fontSize: 'clamp(0.65rem, 1.6vw, 0.78rem)', color: COLORS.gold }}>
+                      Wants: {v.wantsEmoji} {v.wants} = {'\uD83D\uDC1A'} {needs}
+                    </div>
+                    {short > 0 ? (
+                      <div style={{ fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)', color: COLORS.error, fontWeight: 'bold', marginTop: 4 }}>
+                        Short {'\uD83D\uDC1A'} {short}!
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)', color: COLORS.accent, fontWeight: 'bold', marginTop: 4 }}>
+                        {'\u2714'} Can afford!
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          ))}
-        </div>
+            <div style={{ textAlign: 'center' }}>
+              <button
+                onClick={() => {
+                  setCommodityStep('jobs');
+                  setMessage('Assign jobs to villagers who are short on shells. Click a job, then click a villager to assign it.');
+                  setMessageType('info');
+                }}
+                style={btnSecondary}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.06)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+              >
+                Assign Market Jobs {'\uD83D\uDCBC'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* JOBS step: assign jobs to villagers */}
+        {commodityStep === 'jobs' && (
+          <div style={{ marginBottom: 16 }}>
+            {/* Available jobs */}
+            <div style={{
+              background: 'rgba(141,110,99,0.1)',
+              border: '1px solid rgba(141,110,99,0.3)',
+              borderRadius: 12,
+              padding: '10px 14px',
+              marginBottom: 12,
+            }}>
+              <div style={{ fontSize: 'clamp(0.75rem, 2vw, 0.88rem)', fontWeight: 'bold', color: COLORS.shell, marginBottom: 8 }}>
+                Available Jobs:
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {JOBS.map(job => {
+                  const taken = jobsTaken[job.id] !== undefined;
+                  const isSelected = selectedJob === job.id;
+                  return (
+                    <button
+                      key={job.id}
+                      disabled={taken}
+                      onClick={() => setSelectedJob(isSelected ? null : job.id)}
+                      style={{
+                        background: taken ? 'rgba(255,255,255,0.05)' : isSelected ? 'rgba(212,160,23,0.3)' : 'rgba(255,255,255,0.1)',
+                        border: `2px solid ${taken ? 'rgba(255,255,255,0.1)' : isSelected ? COLORS.gold : 'rgba(255,255,255,0.2)'}`,
+                        borderRadius: 10,
+                        padding: '8px 12px',
+                        cursor: taken ? 'default' : 'pointer',
+                        opacity: taken ? 0.4 : 1,
+                        fontFamily: 'inherit',
+                        color: COLORS.text,
+                        fontSize: 'clamp(0.65rem, 1.6vw, 0.78rem)',
+                        textAlign: 'left',
+                        transition: 'all 0.15s ease',
+                        transform: isSelected ? 'scale(1.05)' : 'scale(1)',
+                      }}
+                    >
+                      <span style={{ fontSize: 'clamp(1rem, 2.5vw, 1.3rem)' }}>{job.emoji}</span>{' '}
+                      {job.name} <span style={{ color: COLORS.shell, fontWeight: 'bold' }}>({'\uD83D\uDC1A'}{job.pay})</span>
+                      {taken && <span style={{ color: COLORS.textDim }}> - {villagers[jobsTaken[job.id]].name}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Villagers who need jobs */}
+            {selectedJob !== null && (
+              <div style={{
+                background: 'rgba(212,160,23,0.08)',
+                border: `1px solid ${COLORS.gold}`,
+                borderRadius: 12,
+                padding: '10px 14px',
+                marginBottom: 12,
+              }}>
+                <div style={{ fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)', color: COLORS.gold, marginBottom: 8 }}>
+                  Assign "{JOBS[selectedJob].name}" to:
+                </div>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  {villagers.map(v => {
+                    const has = (shells[v.id] || 0) + (jobEarnings[v.id] || 0);
+                    const needs = SHELL_BUY[v.wants];
+                    const short = Math.max(0, needs - has);
+                    if (short === 0) return null;
+                    return (
+                      <button
+                        key={v.id}
+                        onClick={() => handleJobAssign(selectedJob, v.id)}
+                        style={{
+                          background: 'rgba(198,40,40,0.15)',
+                          border: '2px solid rgba(198,40,40,0.4)',
+                          borderRadius: 10,
+                          padding: '8px 14px',
+                          cursor: 'pointer',
+                          fontFamily: 'inherit',
+                          color: COLORS.text,
+                          fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)',
+                          transition: 'transform 0.15s ease',
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                      >
+                        {v.emoji} {v.name} <span style={{ color: COLORS.error }}>(short {'\uD83D\uDC1A'}{short})</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Summary of current status */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: 8,
+            }}>
+              {villagers.map(v => {
+                const baseShells = shells[v.id] || 0;
+                const earned = jobEarnings[v.id] || 0;
+                const total = baseShells + earned;
+                const needs = SHELL_BUY[v.wants];
+                const short = Math.max(0, needs - total);
+                return (
+                  <div key={v.id} style={{
+                    background: short > 0 ? 'rgba(198,40,40,0.1)' : 'rgba(46,125,50,0.15)',
+                    border: `1px solid ${short > 0 ? 'rgba(198,40,40,0.3)' : COLORS.accent}`,
+                    borderRadius: 8,
+                    padding: '6px 10px',
+                    fontSize: 'clamp(0.6rem, 1.5vw, 0.72rem)',
+                  }}>
+                    <strong>{v.emoji} {v.name}</strong>: {'\uD83D\uDC1A'}{baseShells}{earned > 0 ? ` +${earned} (jobs)` : ''} = {total}
+                    <span style={{ color: short > 0 ? COLORS.error : COLORS.accent }}>
+                      {' '}/{needs} {short > 0 ? `(need ${short} more)` : '\u2714'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {tradeLog.length > 0 && (
           <div style={{
@@ -791,15 +1207,26 @@ export default function BarterTownBuilder() {
   // ----------------------------------------
 
   if (phase === 'coins') {
+    const allBuyAttempted = Object.keys(coinsBuyAttempted).length === 4;
+    const someFailed = allBuyAttempted && villagers.some(v => !v.satisfied);
+    const stepLabel = coinsStep === 'distribute' ? 'Distribution' : coinsStep === 'sell' ? 'Selling' : coinsStep === 'buy' ? 'Buying' : coinsStep === 'inflation' ? 'Inflation!' : coinsStep === 'help' ? 'Sharing' : 'Final Buy';
+    const stepDesc = coinsStep === 'distribute'
+      ? 'The king gives gold coins to villagers based on their social rank...'
+      : coinsStep === 'sell'
+        ? 'Click each villager to sell their goods at market prices.'
+        : coinsStep === 'buy'
+          ? 'Click each villager to try buying what they want.'
+          : coinsStep === 'inflation'
+            ? 'The king minted too many coins! Prices are soaring!'
+            : coinsStep === 'help'
+              ? 'Rich villagers must help poor ones. Click a rich villager, then a poor one.'
+              : 'The poor villagers can finally buy. Click them to complete their purchase!';
+
     return (
       <div style={containerStyle}>
         {renderProgress()}
         <h2 style={titleStyle}>{'\uD83E\uDE99'} Gold Coins Era</h2>
-        <p style={subtitleStyle}>
-          {coinsStep === 'sell'
-            ? 'Items now have set prices! Sell your goods at market value.'
-            : 'Buy what you want at the listed price!'}
-        </p>
+        <p style={subtitleStyle}>{stepDesc}</p>
 
         <div style={{
           display: 'flex',
@@ -816,56 +1243,389 @@ export default function BarterTownBuilder() {
             {'\u{23F3}'} Days: <strong style={{ color: COLORS.gold }}>{dayCount}</strong>
           </span>
           <span style={{ fontSize: 'clamp(0.65rem, 1.6vw, 0.8rem)', color: COLORS.gold, fontWeight: 'bold' }}>
-            Phase: {coinsStep === 'sell' ? 'Selling' : 'Buying'}
+            {stepLabel}
           </span>
           <span style={{ fontSize: 'clamp(0.65rem, 1.6vw, 0.8rem)', color: COLORS.textDim }}>
             Barter: <strong style={{ color: COLORS.error }}>{barterDays}d</strong> | Shells: <strong style={{ color: COLORS.shell }}>{commodityDays}d</strong>
           </span>
         </div>
 
-        {/* Price list */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: 'clamp(6px, 1.5vw, 12px)',
-          marginBottom: 10,
-          flexWrap: 'wrap',
-        }}>
-          {ITEMS.map(item => (
-            <div key={item.name} style={{
-              background: 'rgba(212,160,23,0.12)',
-              border: '1px solid rgba(212,160,23,0.3)',
-              borderRadius: 8,
-              padding: '4px 10px',
-              fontSize: 'clamp(0.6rem, 1.5vw, 0.75rem)',
-              color: COLORS.gold,
-            }}>
-              {item.emoji} = {'\uD83E\uDE99'}{COIN_PRICES[item.name]}
-            </div>
-          ))}
-        </div>
+        {/* Price list for sell/buy/buy2 steps */}
+        {(coinsStep === 'sell' || coinsStep === 'buy' || coinsStep === 'buy2' || coinsStep === 'help') && (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 'clamp(4px, 1vw, 8px)',
+            marginBottom: 10,
+            flexWrap: 'wrap',
+          }}>
+            {ITEMS.map(item => (
+              <div key={item.name} style={{
+                background: 'rgba(212,160,23,0.12)',
+                border: '1px solid rgba(212,160,23,0.3)',
+                borderRadius: 8,
+                padding: '3px 8px',
+                fontSize: 'clamp(0.55rem, 1.4vw, 0.7rem)',
+                color: COLORS.gold,
+              }}>
+                {item.emoji} {coinsStep === 'sell' ? `sell ${COIN_SELL[item.name]}` : `buy ${coinBuyPrices[item.name]}`}
+              </div>
+            ))}
+          </div>
+        )}
 
         {message && <div style={messageStyle}>{message}</div>}
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 'clamp(8px, 2vw, 12px)',
-          marginBottom: 16,
-        }}>
-          {villagers.map(v => renderVillagerCard(v, handleCoinsClick,
+        {/* DISTRIBUTE step */}
+        {coinsStep === 'distribute' && (
+          <div style={{ marginBottom: 16 }}>
             <div style={{
-              marginTop: 6,
-              fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)',
-              color: COLORS.gold,
-              fontWeight: 'bold',
+              background: 'rgba(212,160,23,0.08)',
+              border: '1px solid rgba(212,160,23,0.3)',
+              borderRadius: 12,
+              padding: '14px 18px',
+              marginBottom: 14,
+              textAlign: 'center',
             }}>
-              {'\uD83E\uDE99'} {wallets[v.id] || 0} coins
+              <div style={{ fontSize: 'clamp(1.8rem, 6vw, 2.5rem)', marginBottom: 8 }}>{'\uD83D\uDC51'}</div>
+              <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.95rem)', color: COLORS.gold, fontWeight: 'bold', marginBottom: 10 }}>
+                The King Distributes Coins
+              </div>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: 8,
+                marginBottom: 12,
+              }}>
+                {villagers.map(v => (
+                  <div key={v.id} style={{
+                    background: COLORS.cardBg,
+                    borderRadius: 8,
+                    padding: '8px 10px',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                  }}>
+                    <div style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)' }}>{v.emoji}</div>
+                    <div style={{ fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)', fontWeight: 'bold', color: COLORS.textBright }}>{v.name}</div>
+                    <div style={{ fontSize: 'clamp(0.6rem, 1.5vw, 0.72rem)', color: COLORS.textDim }}>{KING_TITLES[v.id]}</div>
+                    <div style={{
+                      fontSize: 'clamp(0.85rem, 2.2vw, 1rem)',
+                      color: KING_COINS[v.id] >= 5 ? COLORS.gold : COLORS.error,
+                      fontWeight: 'bold',
+                      marginTop: 4,
+                    }}>
+                      {'\uD83E\uDE99'} {KING_COINS[v.id]} coins
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)', color: COLORS.error, marginBottom: 10 }}>
+                Notice: The Merchant gets 7 coins, but the Shepherd only gets 1! Is that fair?
+              </div>
+              <button
+                onClick={handleCoinsDistribute}
+                style={btnSecondary}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.06)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+              >
+                Collect Coins & Start Trading
+              </button>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
 
-        {tradeLog.length > 0 && (
+        {/* SELL step */}
+        {coinsStep === 'sell' && (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: 'clamp(8px, 2vw, 12px)',
+            marginBottom: 16,
+          }}>
+            {villagers.map(v => renderVillagerCard(v, handleCoinsClick,
+              <div style={{ marginTop: 6, fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)', color: COLORS.gold, fontWeight: 'bold' }}>
+                {'\uD83E\uDE99'} {wallets[v.id] || 0} coins
+                <span style={{ fontSize: 'clamp(0.5rem, 1.3vw, 0.62rem)', color: COLORS.textDim, fontWeight: 'normal' }}>
+                  {' '}({KING_TITLES[v.id]})
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* BUY step */}
+        {coinsStep === 'buy' && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: 'clamp(8px, 2vw, 12px)',
+              marginBottom: 12,
+            }}>
+              {villagers.map(v => {
+                const has = wallets[v.id] || 0;
+                const cost = coinBuyPrices[v.wants];
+                const attempted = coinsBuyAttempted[v.id];
+                const canAfford = has >= cost;
+                return (
+                  <div
+                    key={v.id}
+                    onClick={() => handleCoinsClick(v.id)}
+                    style={{
+                      ...cardStyle(false, v.satisfied),
+                      cursor: (v.satisfied || attempted) ? 'default' : 'pointer',
+                      opacity: attempted && !v.satisfied ? 0.7 : 1,
+                    }}
+                    onMouseEnter={(e) => { if (!v.satisfied && !attempted) e.currentTarget.style.transform = 'scale(1.05)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                  >
+                    <div style={{ fontSize: 'clamp(1.3rem, 4vw, 1.8rem)', marginBottom: 4 }}>{v.emoji}</div>
+                    <div style={{ fontSize: 'clamp(0.75rem, 2vw, 0.9rem)', fontWeight: 'bold', color: COLORS.textBright, marginBottom: 4 }}>
+                      {v.name} <span style={{ fontSize: 'clamp(0.55rem, 1.4vw, 0.65rem)', color: COLORS.textDim, fontWeight: 'normal' }}>({KING_TITLES[v.id]})</span>
+                    </div>
+                    <div style={{ fontSize: 'clamp(0.65rem, 1.6vw, 0.78rem)', color: COLORS.gold }}>
+                      {'\uD83E\uDE99'} {has} coins
+                    </div>
+                    <div style={{ fontSize: 'clamp(0.6rem, 1.5vw, 0.72rem)', color: COLORS.textDim }}>
+                      Wants: {v.wantsEmoji} = {'\uD83E\uDE99'}{cost}
+                    </div>
+                    {v.satisfied ? (
+                      <div style={{ fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)', color: COLORS.accent, fontWeight: 'bold', marginTop: 4 }}>{'\u2714'} Bought!</div>
+                    ) : attempted ? (
+                      <div style={{ fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)', color: COLORS.error, fontWeight: 'bold', marginTop: 4 }}>{'\u2718'} Can't afford!</div>
+                    ) : (
+                      <div style={{ fontSize: 'clamp(0.65rem, 1.6vw, 0.78rem)', color: canAfford ? COLORS.accent : COLORS.error, marginTop: 4 }}>
+                        {canAfford ? 'Click to buy' : 'Click to try...'}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Inequality lesson + continue */}
+            {someFailed && (
+              <div style={{
+                background: 'rgba(123,31,162,0.15)',
+                border: '1px solid rgba(123,31,162,0.4)',
+                borderRadius: 12,
+                padding: '12px 16px',
+                marginBottom: 12,
+                textAlign: 'center',
+              }}>
+                <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.95rem)', color: COLORS.purple, fontWeight: 'bold', marginBottom: 6 }}>
+                  {'\uD83D\uDCA1'} Inequality in Action!
+                </div>
+                <div style={{ fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)', color: COLORS.text, lineHeight: 1.6, marginBottom: 10 }}>
+                  The king gave some people more coins than others. Even though everyone worked hard,
+                  {' '}<strong style={{ color: COLORS.error }}>Ama and Yaw can't afford</strong> what they need because they started with fewer coins.
+                  This is called <strong style={{ color: COLORS.purple }}>wealth inequality</strong>.
+                </div>
+                <div style={{ fontSize: 'clamp(0.65rem, 1.6vw, 0.78rem)', color: COLORS.textDim, marginBottom: 10 }}>
+                  But wait... things are about to get worse.
+                </div>
+                <button
+                  onClick={() => {
+                    setCoinsStep('inflation');
+                    setMessage('');
+                    setMessageType('info');
+                  }}
+                  style={{
+                    ...btnPrimary,
+                    background: `linear-gradient(135deg, ${COLORS.purple}, #4A148C)`,
+                    border: '2px solid #CE93D8',
+                    boxShadow: '0 4px 12px rgba(123,31,162,0.4)',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.06)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                >
+                  What Happens Next? {'\uD83D\uDE28'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* INFLATION step */}
+        {coinsStep === 'inflation' && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{
+              background: 'rgba(198,40,40,0.1)',
+              border: '2px solid rgba(198,40,40,0.4)',
+              borderRadius: 12,
+              padding: '16px 20px',
+              marginBottom: 14,
+              textAlign: 'center',
+            }}>
+              <div style={{ fontSize: 'clamp(2rem, 6vw, 2.8rem)', marginBottom: 8 }}>{'\uD83D\uDCB8'}{'\uD83D\uDCB8'}{'\uD83D\uDCB8'}</div>
+              <div style={{ fontSize: 'clamp(0.9rem, 2.5vw, 1.1rem)', color: COLORS.error, fontWeight: 'bold', marginBottom: 10 }}>
+                The King Minted Too Many Coins!
+              </div>
+              <div style={{ fontSize: 'clamp(0.75rem, 2vw, 0.88rem)', color: COLORS.text, lineHeight: 1.7, marginBottom: 14 }}>
+                The king printed more gold coins to pay for his palace.
+                Now there are <strong>twice as many coins</strong> in the village,
+                but the same amount of goods. So <strong style={{ color: COLORS.error }}>all prices doubled!</strong>
+              </div>
+
+              {/* Before/After comparison */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: 8,
+                marginBottom: 14,
+              }}>
+                {villagers.filter(v => !v.satisfied).map(v => {
+                  const currentCoins = wallets[v.id] || 0;
+                  const currentPrice = coinBuyPrices[v.wants];
+                  const newCoins = currentCoins * 2;
+                  const newPrice = currentPrice * 2;
+                  return (
+                    <div key={v.id} style={{
+                      background: COLORS.cardBg,
+                      borderRadius: 8,
+                      padding: '8px 10px',
+                      border: '1px solid rgba(198,40,40,0.3)',
+                    }}>
+                      <div style={{ fontSize: 'clamp(0.75rem, 2vw, 0.88rem)', fontWeight: 'bold', color: COLORS.textBright }}>
+                        {v.emoji} {v.name}
+                      </div>
+                      <div style={{ fontSize: 'clamp(0.6rem, 1.5vw, 0.72rem)', color: COLORS.textDim, marginTop: 4 }}>
+                        Before: {'\uD83E\uDE99'}{currentCoins} / needs {'\uD83E\uDE99'}{currentPrice}
+                      </div>
+                      <div style={{ fontSize: 'clamp(0.65rem, 1.6vw, 0.78rem)', color: COLORS.error, fontWeight: 'bold' }}>
+                        After: {'\uD83E\uDE99'}{newCoins} / needs {'\uD83E\uDE99'}{newPrice}
+                      </div>
+                      <div style={{ fontSize: 'clamp(0.55rem, 1.4vw, 0.65rem)', color: COLORS.error }}>
+                        Still short {'\uD83E\uDE99'}{newPrice - newCoins}!
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div style={{ fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)', color: COLORS.purple, fontWeight: 'bold', marginBottom: 12 }}>
+                This is called <strong>inflation</strong> - when money loses its buying power!
+              </div>
+
+              <button
+                onClick={handleInflation}
+                style={btnPrimary}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.06)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+              >
+                Can We Help? {'\uD83E\uDD1D'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* HELP step */}
+        {coinsStep === 'help' && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: 'clamp(8px, 2vw, 12px)',
+              marginBottom: 12,
+            }}>
+              {villagers.map(v => {
+                const has = wallets[v.id] || 0;
+                const cost = coinBuyPrices[v.wants];
+                const isRich = v.satisfied && has > 0;
+                const isPoor = !v.satisfied && has < cost;
+                const isGiverSelected = selectedGiver === v.id;
+                const deficit = isPoor ? cost - has : 0;
+                return (
+                  <div
+                    key={v.id}
+                    onClick={() => handleHelpClick(v.id)}
+                    style={{
+                      background: isGiverSelected ? 'rgba(212,160,23,0.25)' : isRich ? 'rgba(46,125,50,0.15)' : isPoor ? 'rgba(198,40,40,0.15)' : COLORS.cardBg,
+                      border: `2px solid ${isGiverSelected ? COLORS.gold : isRich ? COLORS.accent : isPoor ? 'rgba(198,40,40,0.5)' : 'rgba(255,255,255,0.1)'}`,
+                      borderRadius: 12,
+                      padding: 'clamp(8px, 2vw, 14px)',
+                      cursor: (isRich || (isPoor && selectedGiver !== null)) ? 'pointer' : 'default',
+                      textAlign: 'center',
+                      transition: 'all 0.2s ease',
+                      transform: isGiverSelected ? 'scale(1.05)' : 'scale(1)',
+                    }}
+                    onMouseEnter={(e) => { if (isRich || (isPoor && selectedGiver !== null)) e.currentTarget.style.transform = 'scale(1.05)'; }}
+                    onMouseLeave={(e) => { if (!isGiverSelected) e.currentTarget.style.transform = 'scale(1)'; }}
+                  >
+                    <div style={{ fontSize: 'clamp(1.3rem, 4vw, 1.8rem)', marginBottom: 4 }}>{v.emoji}</div>
+                    <div style={{ fontSize: 'clamp(0.75rem, 2vw, 0.9rem)', fontWeight: 'bold', color: COLORS.textBright }}>{v.name}</div>
+                    <div style={{ fontSize: 'clamp(0.65rem, 1.6vw, 0.78rem)', color: COLORS.gold, marginTop: 4 }}>
+                      {'\uD83E\uDE99'} {has} coins
+                    </div>
+                    {isRich && (
+                      <div style={{ fontSize: 'clamp(0.65rem, 1.6vw, 0.78rem)', color: COLORS.accent, fontWeight: 'bold', marginTop: 4 }}>
+                        {'\u2714'} Already bought - can share!
+                      </div>
+                    )}
+                    {isPoor && (
+                      <div style={{ fontSize: 'clamp(0.65rem, 1.6vw, 0.78rem)', color: COLORS.error, fontWeight: 'bold', marginTop: 4 }}>
+                        Needs {v.wantsEmoji} ({'\uD83E\uDE99'}{cost}) - short {'\uD83E\uDE99'}{deficit}
+                      </div>
+                    )}
+                    {v.satisfied && has === 0 && (
+                      <div style={{ fontSize: 'clamp(0.65rem, 1.6vw, 0.78rem)', color: COLORS.textDim, marginTop: 4 }}>
+                        Already bought, no coins left
+                      </div>
+                    )}
+                    {!v.satisfied && has >= cost && (
+                      <div style={{ fontSize: 'clamp(0.65rem, 1.6vw, 0.78rem)', color: COLORS.accent, fontWeight: 'bold', marginTop: 4 }}>
+                        Can afford! Will buy next.
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* BUY2 step */}
+        {coinsStep === 'buy2' && (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: 'clamp(8px, 2vw, 12px)',
+            marginBottom: 16,
+          }}>
+            {villagers.map(v => {
+              const has = wallets[v.id] || 0;
+              const cost = coinBuyPrices[v.wants];
+              return (
+                <div
+                  key={v.id}
+                  onClick={() => handleCoinsClick(v.id)}
+                  style={{
+                    ...cardStyle(false, v.satisfied),
+                    cursor: v.satisfied ? 'default' : 'pointer',
+                  }}
+                  onMouseEnter={(e) => { if (!v.satisfied) e.currentTarget.style.transform = 'scale(1.05)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                >
+                  <div style={{ fontSize: 'clamp(1.3rem, 4vw, 1.8rem)', marginBottom: 4 }}>{v.emoji}</div>
+                  <div style={{ fontSize: 'clamp(0.75rem, 2vw, 0.9rem)', fontWeight: 'bold', color: COLORS.textBright, marginBottom: 4 }}>{v.name}</div>
+                  {v.satisfied ? (
+                    <div style={{ fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)', color: COLORS.accent, fontWeight: 'bold' }}>{'\u2714'} Got {v.wantsEmoji}!</div>
+                  ) : (
+                    <>
+                      <div style={{ fontSize: 'clamp(0.65rem, 1.6vw, 0.78rem)', color: COLORS.gold }}>
+                        {'\uD83E\uDE99'} {has} / needs {'\uD83E\uDE99'}{cost}
+                      </div>
+                      <div style={{ fontSize: 'clamp(0.65rem, 1.6vw, 0.78rem)', color: has >= cost ? COLORS.accent : COLORS.error, marginTop: 4 }}>
+                        {has >= cost ? `Click to buy ${v.wantsEmoji}!` : `Still short ${cost - has}`}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {tradeLog.length > 0 && coinsStep !== 'distribute' && coinsStep !== 'inflation' && (
           <div style={{
             background: 'rgba(255,255,255,0.04)',
             borderRadius: 8,
@@ -883,7 +1643,7 @@ export default function BarterTownBuilder() {
           </div>
         )}
 
-        {allSatisfied && coinsStep === 'buy' && (
+        {allSatisfied && (coinsStep === 'buy' || coinsStep === 'buy2') && (
           <div style={{ textAlign: 'center' }}>
             <button
               onClick={finishGame}
@@ -994,10 +1754,13 @@ export default function BarterTownBuilder() {
             <strong>Barter</strong> is hard because you need a "double coincidence of wants" - both people must want what the other has.
           </div>
           <div style={{ marginBottom: 4 }}>
-            <strong>Commodity money</strong> (like shells) solves this by giving everyone something everyone accepts.
+            <strong>Shell money</strong> lets everyone trade, but different prices mean some people have to work extra jobs to afford what they need.
+          </div>
+          <div style={{ marginBottom: 4 }}>
+            <strong>Inequality</strong> happens when some people start with more money than others - not because they worked harder, but because of luck or status.
           </div>
           <div>
-            <strong>Coins with prices</strong> make trade even faster because everyone knows exactly what things cost!
+            <strong>Inflation</strong> happens when too much money is created - prices go up and everyone's money buys less, especially hurting those who already had less!
           </div>
         </div>
 
