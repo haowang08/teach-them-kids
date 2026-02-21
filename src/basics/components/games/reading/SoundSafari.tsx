@@ -374,15 +374,6 @@ function ChoiceCard({
           {choice.image}
         </span>
       )}
-      <span style={{
-        fontSize: 'clamp(0.85rem, 2.2vw, 1.2rem)',
-        fontWeight: 700,
-        color: '#FFFFFF',
-        textShadow: '0 1px 3px rgba(0,0,0,0.5)',
-        textTransform: 'lowercase',
-      }}>
-        {choice.word}
-      </span>
     </button>
   );
 }
