@@ -98,13 +98,23 @@ function mulDivFactors(level: number): [number, number] {
 // ── Generators ────────────────────────────────────────────────────────────
 
 export function generateAddition(level: number, count: number = 10): MathProblem[] {
-  const [, max] = addSubRange(level);
+  // Non-overlapping sum bands per level
+  const [minSum, maxSum] =
+    level === 0 ? [1, 5] :
+    level === 1 ? [6, 10] :
+    level === 2 ? [11, 15] :
+                  [16, 20];
+
   const problems: MathProblem[] = [];
 
   for (let i = 0; i < count; i++) {
-    const a = randInt(0, max);
-    const b = randInt(0, max - a);
-    problems.push(makeProblem(a, b, '+', a + b));
+    const sum = randInt(minSum, maxSum);
+    // Split: for level 0 allow 0 as addend, otherwise both >= 1
+    const aMin = level === 0 ? 0 : 1;
+    const aMax = level === 0 ? sum : sum - 1;
+    const a = randInt(aMin, aMax);
+    const b = sum - a;
+    problems.push(makeProblem(a, b, '+', sum));
   }
 
   return problems;

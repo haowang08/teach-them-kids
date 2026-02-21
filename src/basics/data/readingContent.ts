@@ -154,107 +154,321 @@ export const SIGHT_WORDS: string[][] = [
 ];
 
 // ── Phoneme data for Sound Safari ─────────────────────────────────────────
-export const PHONEMES: {
+// Each word can optionally have an `asset` path pointing to a kenney PNG in
+// public/kenney/. When present the game renders an <img>; otherwise the emoji.
+
+export interface PhonemeWord {
+  word: string;
+  image: string;
+  asset?: string;
+}
+
+export interface PhonemeEntry {
   phoneme: string;
-  words: { word: string; image: string }[];
-  distractors: { word: string; image: string }[];
-}[] = [
-  // Beginning consonants
+  words: PhonemeWord[];
+  distractors: PhonemeWord[];
+}
+
+export const PHONEMES: PhonemeEntry[] = [
+  // ─── Beginning consonants ────────────────────────────────────────────────
   {
     phoneme: 'b',
     words: [
+      { word: 'bear', image: '🐻', asset: '/kenney/animals/bear.png' },
+      { word: 'banana', image: '🍌', asset: '/kenney/food/banana.png' },
+      { word: 'bread', image: '🍞', asset: '/kenney/food/bread.png' },
       { word: 'bat', image: '🦇' },
-      { word: 'bed', image: '🛏️' },
       { word: 'bus', image: '🚌' },
     ],
     distractors: [
-      { word: 'cat', image: '🐱' },
-      { word: 'dog', image: '🐕' },
+      { word: 'cow', image: '🐄', asset: '/kenney/animals/cow.png' },
+      { word: 'dog', image: '🐕', asset: '/kenney/animals/dog.png' },
+      { word: 'apple', image: '🍎', asset: '/kenney/food/apple.png' },
     ],
   },
   {
     phoneme: 'c',
     words: [
-      { word: 'cat', image: '🐱' },
-      { word: 'cup', image: '🥤' },
+      { word: 'cow', image: '🐄', asset: '/kenney/animals/cow.png' },
+      { word: 'cake', image: '🎂', asset: '/kenney/food/cake.png' },
+      { word: 'carrot', image: '🥕', asset: '/kenney/food/carrot.png' },
+      { word: 'cookie', image: '🍪', asset: '/kenney/food/cookie.png' },
       { word: 'car', image: '🚗' },
     ],
     distractors: [
-      { word: 'hat', image: '🎩' },
-      { word: 'sun', image: '☀️' },
+      { word: 'dog', image: '🐕', asset: '/kenney/animals/dog.png' },
+      { word: 'tomato', image: '🍅', asset: '/kenney/food/tomato.png' },
     ],
   },
   {
     phoneme: 'd',
     words: [
-      { word: 'dog', image: '🐕' },
-      { word: 'duck', image: '🦆' },
+      { word: 'dog', image: '🐕', asset: '/kenney/animals/dog.png' },
+      { word: 'duck', image: '🦆', asset: '/kenney/animals/duck.png' },
+      { word: 'donut', image: '🍩', asset: '/kenney/food/donut.png' },
       { word: 'drum', image: '🥁' },
     ],
     distractors: [
-      { word: 'pig', image: '🐷' },
-      { word: 'run', image: '🏃' },
+      { word: 'pig', image: '🐷', asset: '/kenney/animals/pig.png' },
+      { word: 'frog', image: '🐸', asset: '/kenney/animals/frog.png' },
     ],
   },
   {
     phoneme: 'f',
     words: [
+      { word: 'frog', image: '🐸', asset: '/kenney/animals/frog.png' },
+      { word: 'fish', image: '🐟', asset: '/kenney/food/fish.png' },
+      { word: 'fries', image: '🍟', asset: '/kenney/food/fries.png' },
       { word: 'fox', image: '🦊' },
-      { word: 'fan', image: '🪭' },
-      { word: 'fish', image: '🐟' },
     ],
     distractors: [
+      { word: 'bear', image: '🐻', asset: '/kenney/animals/bear.png' },
+      { word: 'lemon', image: '🍋', asset: '/kenney/food/lemon.png' },
+    ],
+  },
+  {
+    phoneme: 'g',
+    words: [
+      { word: 'goat', image: '🐐', asset: '/kenney/animals/goat.png' },
+      { word: 'gorilla', image: '🦍', asset: '/kenney/animals/gorilla.png' },
+      { word: 'grapes', image: '🍇', asset: '/kenney/food/grapes.png' },
+      { word: 'giraffe', image: '🦒', asset: '/kenney/animals/giraffe.png' },
+    ],
+    distractors: [
+      { word: 'bear', image: '🐻', asset: '/kenney/animals/bear.png' },
+      { word: 'cake', image: '🎂', asset: '/kenney/food/cake.png' },
+    ],
+  },
+  {
+    phoneme: 'h',
+    words: [
+      { word: 'horse', image: '🐴', asset: '/kenney/animals/horse.png' },
+      { word: 'hippo', image: '🦛', asset: '/kenney/animals/hippo.png' },
+      { word: 'hot dog', image: '🌭', asset: '/kenney/food/hot-dog.png' },
       { word: 'hat', image: '🎩' },
-      { word: 'net', image: '🥅' },
+    ],
+    distractors: [
+      { word: 'pig', image: '🐷', asset: '/kenney/animals/pig.png' },
+      { word: 'banana', image: '🍌', asset: '/kenney/food/banana.png' },
+    ],
+  },
+  {
+    phoneme: 'j',
+    words: [
+      { word: 'jet', image: '✈️' },
+      { word: 'jar', image: '🫙' },
+      { word: 'jam', image: '🫐' },
+    ],
+    distractors: [
+      { word: 'goat', image: '🐐', asset: '/kenney/animals/goat.png' },
+      { word: 'fish', image: '🐟', asset: '/kenney/food/fish.png' },
+    ],
+  },
+  {
+    phoneme: 'k',
+    words: [
+      { word: 'kite', image: '🪁' },
+      { word: 'king', image: '🤴' },
+      { word: 'key', image: '🔑' },
+    ],
+    distractors: [
+      { word: 'goat', image: '🐐', asset: '/kenney/animals/goat.png' },
+      { word: 'pie', image: '🥧', asset: '/kenney/food/pie.png' },
+    ],
+  },
+  {
+    phoneme: 'l',
+    words: [
+      { word: 'lemon', image: '🍋', asset: '/kenney/food/lemon.png' },
+      { word: 'lollipop', image: '🍭', asset: '/kenney/food/lollypop.png' },
+      { word: 'lion', image: '🦁' },
+      { word: 'lamp', image: '💡' },
+    ],
+    distractors: [
+      { word: 'rabbit', image: '🐰', asset: '/kenney/animals/rabbit.png' },
+      { word: 'orange', image: '🍊', asset: '/kenney/food/orange.png' },
     ],
   },
   {
     phoneme: 'm',
     words: [
-      { word: 'map', image: '🗺️' },
-      { word: 'mug', image: '☕' },
+      { word: 'monkey', image: '🐒', asset: '/kenney/animals/monkey.png' },
+      { word: 'moose', image: '🫎', asset: '/kenney/animals/moose.png' },
+      { word: 'mushroom', image: '🍄', asset: '/kenney/food/mushroom.png' },
+      { word: 'muffin', image: '🧁', asset: '/kenney/food/muffin.png' },
       { word: 'moon', image: '🌙' },
     ],
     distractors: [
-      { word: 'sun', image: '☀️' },
-      { word: 'pen', image: '🖊️' },
+      { word: 'narwhal', image: '🦄', asset: '/kenney/animals/narwhal.png' },
+      { word: 'pear', image: '🍐', asset: '/kenney/food/pear.png' },
+    ],
+  },
+  {
+    phoneme: 'n',
+    words: [
+      { word: 'narwhal', image: '🦄', asset: '/kenney/animals/narwhal.png' },
+      { word: 'nest', image: '🪺' },
+      { word: 'net', image: '🥅' },
+      { word: 'nut', image: '🥜' },
+    ],
+    distractors: [
+      { word: 'monkey', image: '🐒', asset: '/kenney/animals/monkey.png' },
+      { word: 'lemon', image: '🍋', asset: '/kenney/food/lemon.png' },
+    ],
+  },
+  {
+    phoneme: 'p',
+    words: [
+      { word: 'pig', image: '🐷', asset: '/kenney/animals/pig.png' },
+      { word: 'penguin', image: '🐧', asset: '/kenney/animals/penguin.png' },
+      { word: 'pizza', image: '🍕', asset: '/kenney/food/pizza.png' },
+      { word: 'pie', image: '🥧', asset: '/kenney/food/pie.png' },
+      { word: 'pear', image: '🍐', asset: '/kenney/food/pear.png' },
+    ],
+    distractors: [
+      { word: 'bear', image: '🐻', asset: '/kenney/animals/bear.png' },
+      { word: 'taco', image: '🌮', asset: '/kenney/food/taco.png' },
+    ],
+  },
+  {
+    phoneme: 'r',
+    words: [
+      { word: 'rabbit', image: '🐰', asset: '/kenney/animals/rabbit.png' },
+      { word: 'rhino', image: '🦏', asset: '/kenney/animals/rhino.png' },
+      { word: 'rice ball', image: '🍙', asset: '/kenney/food/rice-ball.png' },
+      { word: 'ring', image: '💍' },
+    ],
+    distractors: [
+      { word: 'whale', image: '🐋', asset: '/kenney/animals/whale.png' },
+      { word: 'strawberry', image: '🍓', asset: '/kenney/food/strawberry.png' },
     ],
   },
   {
     phoneme: 's',
     words: [
+      { word: 'snake', image: '🐍', asset: '/kenney/animals/snake.png' },
+      { word: 'strawberry', image: '🍓', asset: '/kenney/food/strawberry.png' },
+      { word: 'sandwich', image: '🥪', asset: '/kenney/food/sandwich.png' },
       { word: 'sun', image: '☀️' },
-      { word: 'sock', image: '🧦' },
       { word: 'star', image: '⭐' },
     ],
     distractors: [
-      { word: 'bug', image: '🐛' },
-      { word: 'hat', image: '🎩' },
+      { word: 'crocodile', image: '🐊', asset: '/kenney/animals/crocodile.png' },
+      { word: 'banana', image: '🍌', asset: '/kenney/food/banana.png' },
     ],
   },
-  // Digraphs
+  {
+    phoneme: 't',
+    words: [
+      { word: 'tomato', image: '🍅', asset: '/kenney/food/tomato.png' },
+      { word: 'taco', image: '🌮', asset: '/kenney/food/taco.png' },
+      { word: 'tent', image: '⛺' },
+      { word: 'train', image: '🚂' },
+    ],
+    distractors: [
+      { word: 'snake', image: '🐍', asset: '/kenney/animals/snake.png' },
+      { word: 'pizza', image: '🍕', asset: '/kenney/food/pizza.png' },
+    ],
+  },
+  {
+    phoneme: 'v',
+    words: [
+      { word: 'van', image: '🚐' },
+      { word: 'vase', image: '🏺' },
+      { word: 'vest', image: '🦺' },
+    ],
+    distractors: [
+      { word: 'walrus', image: '🦭', asset: '/kenney/animals/walrus.png' },
+      { word: 'egg', image: '🥚', asset: '/kenney/food/egg.png' },
+    ],
+  },
+  {
+    phoneme: 'w',
+    words: [
+      { word: 'whale', image: '🐋', asset: '/kenney/animals/whale.png' },
+      { word: 'walrus', image: '🦭', asset: '/kenney/animals/walrus.png' },
+      { word: 'waffle', image: '🧇', asset: '/kenney/food/waffle.png' },
+      { word: 'watermelon', image: '🍉', asset: '/kenney/food/watermelon.png' },
+    ],
+    distractors: [
+      { word: 'rabbit', image: '🐰', asset: '/kenney/animals/rabbit.png' },
+      { word: 'lemon', image: '🍋', asset: '/kenney/food/lemon.png' },
+    ],
+  },
+  {
+    phoneme: 'x',
+    words: [
+      { word: 'x-ray', image: '🩻' },
+      { word: 'xylophone', image: '🎵' },
+      { word: 'fox', image: '🦊' },
+    ],
+    distractors: [
+      { word: 'zebra', image: '🦓', asset: '/kenney/animals/zebra.png' },
+      { word: 'onion', image: '🧅', asset: '/kenney/food/onion.png' },
+    ],
+  },
+  {
+    phoneme: 'y',
+    words: [
+      { word: 'yak', image: '🐂' },
+      { word: 'yarn', image: '🧶' },
+      { word: 'yo-yo', image: '🪀' },
+    ],
+    distractors: [
+      { word: 'zebra', image: '🦓', asset: '/kenney/animals/zebra.png' },
+      { word: 'waffle', image: '🧇', asset: '/kenney/food/waffle.png' },
+    ],
+  },
+  {
+    phoneme: 'z',
+    words: [
+      { word: 'zebra', image: '🦓', asset: '/kenney/animals/zebra.png' },
+      { word: 'zoo', image: '🦁' },
+      { word: 'zip', image: '🤐' },
+    ],
+    distractors: [
+      { word: 'snake', image: '🐍', asset: '/kenney/animals/snake.png' },
+      { word: 'apple', image: '🍎', asset: '/kenney/food/apple.png' },
+    ],
+  },
+  {
+    phoneme: 'q',
+    words: [
+      { word: 'queen', image: '👸' },
+      { word: 'quilt', image: '🛏️' },
+      { word: 'quiz', image: '❓' },
+    ],
+    distractors: [
+      { word: 'penguin', image: '🐧', asset: '/kenney/animals/penguin.png' },
+      { word: 'cake', image: '🎂', asset: '/kenney/food/cake.png' },
+    ],
+  },
+
+  // ─── Digraphs ────────────────────────────────────────────────────────────
   {
     phoneme: 'sh',
     words: [
-      { word: 'ship', image: '🚢' },
+      { word: 'ship', image: '🚢', asset: '/kenney/watercraft/ship-small.png' },
       { word: 'shell', image: '🐚' },
       { word: 'shoe', image: '👟' },
+      { word: 'shark', image: '🦈' },
     ],
     distractors: [
-      { word: 'sun', image: '☀️' },
-      { word: 'cat', image: '🐱' },
+      { word: 'chicken', image: '🐔', asset: '/kenney/animals/chicken.png' },
+      { word: 'strawberry', image: '🍓', asset: '/kenney/food/strawberry.png' },
     ],
   },
   {
     phoneme: 'ch',
     words: [
-      { word: 'chair', image: '🪑' },
+      { word: 'chicken', image: '🐔', asset: '/kenney/animals/chicken.png' },
+      { word: 'cherries', image: '🍒', asset: '/kenney/food/cherries.png' },
       { word: 'cheese', image: '🧀' },
-      { word: 'cherry', image: '🍒' },
+      { word: 'chair', image: '🪑' },
     ],
     distractors: [
-      { word: 'car', image: '🚗' },
-      { word: 'shoe', image: '👟' },
+      { word: 'ship', image: '🚢', asset: '/kenney/watercraft/ship-small.png' },
+      { word: 'tomato', image: '🍅', asset: '/kenney/food/tomato.png' },
     ],
   },
   {
@@ -263,13 +477,66 @@ export const PHONEMES: {
       { word: 'thumb', image: '👍' },
       { word: 'three', image: '3️⃣' },
       { word: 'think', image: '🤔' },
+      { word: 'thorn', image: '🌹' },
     ],
     distractors: [
-      { word: 'tree', image: '🌳' },
-      { word: 'ship', image: '🚢' },
+      { word: 'chicken', image: '🐔', asset: '/kenney/animals/chicken.png' },
+      { word: 'ship', image: '🚢', asset: '/kenney/watercraft/ship-small.png' },
     ],
   },
-  // Blends
+  {
+    phoneme: 'wh',
+    words: [
+      { word: 'whale', image: '🐋', asset: '/kenney/animals/whale.png' },
+      { word: 'wheel', image: '🛞' },
+      { word: 'whistle', image: '🎵' },
+      { word: 'whisk', image: '🥄' },
+    ],
+    distractors: [
+      { word: 'walrus', image: '🦭', asset: '/kenney/animals/walrus.png' },
+      { word: 'ship', image: '🚢', asset: '/kenney/watercraft/ship-small.png' },
+    ],
+  },
+  {
+    phoneme: 'ck',
+    words: [
+      { word: 'duck', image: '🦆', asset: '/kenney/animals/duck.png' },
+      { word: 'chick', image: '🐤', asset: '/kenney/animals/chick.png' },
+      { word: 'clock', image: '🕐' },
+      { word: 'sock', image: '🧦' },
+    ],
+    distractors: [
+      { word: 'dog', image: '🐕', asset: '/kenney/animals/dog.png' },
+      { word: 'cake', image: '🎂', asset: '/kenney/food/cake.png' },
+    ],
+  },
+  {
+    phoneme: 'ng',
+    words: [
+      { word: 'ring', image: '💍' },
+      { word: 'king', image: '🤴' },
+      { word: 'sing', image: '🎤' },
+      { word: 'swing', image: '🛝' },
+    ],
+    distractors: [
+      { word: 'duck', image: '🦆', asset: '/kenney/animals/duck.png' },
+      { word: 'pie', image: '🥧', asset: '/kenney/food/pie.png' },
+    ],
+  },
+  {
+    phoneme: 'ph',
+    words: [
+      { word: 'phone', image: '📱' },
+      { word: 'photo', image: '📸' },
+      { word: 'pharaoh', image: '🏛️' },
+    ],
+    distractors: [
+      { word: 'frog', image: '🐸', asset: '/kenney/animals/frog.png' },
+      { word: 'fish', image: '🐟', asset: '/kenney/food/fish.png' },
+    ],
+  },
+
+  // ─── Blends ──────────────────────────────────────────────────────────────
   {
     phoneme: 'bl',
     words: [
@@ -278,44 +545,44 @@ export const PHONEMES: {
       { word: 'blow', image: '🌬️' },
     ],
     distractors: [
-      { word: 'ball', image: '⚽' },
-      { word: 'clap', image: '👏' },
+      { word: 'crocodile', image: '🐊', asset: '/kenney/animals/crocodile.png' },
+      { word: 'grapes', image: '🍇', asset: '/kenney/food/grapes.png' },
     ],
   },
   {
     phoneme: 'cr',
     words: [
-      { word: 'crab', image: '🦀' },
+      { word: 'crocodile', image: '🐊', asset: '/kenney/animals/crocodile.png' },
       { word: 'crown', image: '👑' },
       { word: 'cry', image: '😢' },
     ],
     distractors: [
-      { word: 'car', image: '🚗' },
-      { word: 'frog', image: '🐸' },
+      { word: 'frog', image: '🐸', asset: '/kenney/animals/frog.png' },
+      { word: 'strawberry', image: '🍓', asset: '/kenney/food/strawberry.png' },
     ],
   },
   {
     phoneme: 'st',
     words: [
+      { word: 'strawberry', image: '🍓', asset: '/kenney/food/strawberry.png' },
       { word: 'star', image: '⭐' },
       { word: 'stop', image: '🛑' },
-      { word: 'stick', image: '🥢' },
     ],
     distractors: [
-      { word: 'sun', image: '☀️' },
-      { word: 'tree', image: '🌳' },
+      { word: 'tomato', image: '🍅', asset: '/kenney/food/tomato.png' },
+      { word: 'crocodile', image: '🐊', asset: '/kenney/animals/crocodile.png' },
     ],
   },
   {
     phoneme: 'gr',
     words: [
-      { word: 'grapes', image: '🍇' },
+      { word: 'grapes', image: '🍇', asset: '/kenney/food/grapes.png' },
+      { word: 'gorilla', image: '🦍', asset: '/kenney/animals/gorilla.png' },
       { word: 'green', image: '🟢' },
-      { word: 'grin', image: '😁' },
     ],
     distractors: [
-      { word: 'goat', image: '🐐' },
-      { word: 'drum', image: '🥁' },
+      { word: 'bear', image: '🐻', asset: '/kenney/animals/bear.png' },
+      { word: 'banana', image: '🍌', asset: '/kenney/food/banana.png' },
     ],
   },
   {
@@ -326,8 +593,8 @@ export const PHONEMES: {
       { word: 'truck', image: '🚛' },
     ],
     distractors: [
-      { word: 'tent', image: '⛺' },
-      { word: 'crab', image: '🦀' },
+      { word: 'crocodile', image: '🐊', asset: '/kenney/animals/crocodile.png' },
+      { word: 'pizza', image: '🍕', asset: '/kenney/food/pizza.png' },
     ],
   },
   {
@@ -338,8 +605,44 @@ export const PHONEMES: {
       { word: 'plate', image: '🍽️' },
     ],
     distractors: [
-      { word: 'pan', image: '🍳' },
-      { word: 'block', image: '🧱' },
+      { word: 'banana', image: '🍌', asset: '/kenney/food/banana.png' },
+      { word: 'elephant', image: '🐘', asset: '/kenney/animals/elephant.png' },
+    ],
+  },
+  {
+    phoneme: 'fl',
+    words: [
+      { word: 'flag', image: '🚩' },
+      { word: 'flower', image: '🌸' },
+      { word: 'fly', image: '🪰' },
+    ],
+    distractors: [
+      { word: 'grapes', image: '🍇', asset: '/kenney/food/grapes.png' },
+      { word: 'elephant', image: '🐘', asset: '/kenney/animals/elephant.png' },
+    ],
+  },
+  {
+    phoneme: 'br',
+    words: [
+      { word: 'bread', image: '🍞', asset: '/kenney/food/bread.png' },
+      { word: 'bridge', image: '🌉' },
+      { word: 'broom', image: '🧹' },
+    ],
+    distractors: [
+      { word: 'frog', image: '🐸', asset: '/kenney/animals/frog.png' },
+      { word: 'grapes', image: '🍇', asset: '/kenney/food/grapes.png' },
+    ],
+  },
+  {
+    phoneme: 'dr',
+    words: [
+      { word: 'drum', image: '🥁' },
+      { word: 'dragon', image: '🐉' },
+      { word: 'dress', image: '👗' },
+    ],
+    distractors: [
+      { word: 'bear', image: '🐻', asset: '/kenney/animals/bear.png' },
+      { word: 'crocodile', image: '🐊', asset: '/kenney/animals/crocodile.png' },
     ],
   },
 ];

@@ -1,19 +1,22 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Billboard, Text, OrbitControls } from '@react-three/drei';
-import * as THREE from 'three';
 import type { BasicsGameProps } from '../../../types';
+import type { PhonemeEntry, PhonemeWord } from '../../../data/readingContent';
 import { useGameState } from '../../../hooks/useGameState';
 import { useGameTTS } from '../../../hooks/useGameTTS';
 import { useGameAudio } from '../../../hooks/useGameAudio';
 import { PHONEMES } from '../../../data/readingContent';
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Constants
 // ---------------------------------------------------------------------------
 
 const TOTAL_ROUNDS = 8;
 const CHOICES_PER_ROUND = 4;
+const FONT = "'Fredoka', 'Nunito', system-ui, sans-serif";
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 function shuffle<T>(arr: T[]): T[] {
   const copy = [...arr];
@@ -28,51 +31,72 @@ function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-interface PhonemeEntry {
-  phoneme: string;
-  words: { word: string; image: string }[];
-  distractors: { word: string; image: string }[];
-}
-
 type RoundData = {
   phoneme: string;
   correctIndex: number;
-  choices: { word: string; image: string; isCorrect: boolean }[];
+  choices: (PhonemeWord & { isCorrect: boolean })[];
 };
 
-/** Get phonemes for the given level */
+// ---------------------------------------------------------------------------
+// Level → phoneme pool mapping (12 levels)
+// ---------------------------------------------------------------------------
+
 function getPhonemePool(level: number): PhonemeEntry[] {
-  const consonants = PHONEMES.filter(
-    (p) => p.phoneme.length === 1,
+  const consonants1 = PHONEMES.filter((p) =>
+    ['b', 'c', 'd', 'f', 'g', 'h', 'j'].includes(p.phoneme),
   );
-  const digraphs = PHONEMES.filter(
-    (p) => ['sh', 'ch', 'th', 'wh'].includes(p.phoneme),
+  const consonants2 = PHONEMES.filter((p) =>
+    ['k', 'l', 'm', 'n', 'p', 'r', 's'].includes(p.phoneme),
   );
-  const blends = PHONEMES.filter(
-    (p) => p.phoneme.length === 2 && !['sh', 'ch', 'th', 'wh'].includes(p.phoneme),
+  const consonants3 = PHONEMES.filter((p) =>
+    ['t', 'v', 'w', 'x', 'y', 'z', 'q'].includes(p.phoneme),
   );
+  const allConsonants = [...consonants1, ...consonants2, ...consonants3];
+
+  const digraphs1 = PHONEMES.filter((p) =>
+    ['sh', 'ch', 'th'].includes(p.phoneme),
+  );
+  const digraphs2 = PHONEMES.filter((p) =>
+    ['wh', 'ck', 'ng', 'ph'].includes(p.phoneme),
+  );
+  const allDigraphs = [...digraphs1, ...digraphs2];
+
+  const blends1 = PHONEMES.filter((p) =>
+    ['bl', 'cr', 'st', 'gr'].includes(p.phoneme),
+  );
+  const blends2 = PHONEMES.filter((p) =>
+    ['tr', 'pl', 'fl', 'br', 'dr'].includes(p.phoneme),
+  );
+  const allBlends = [...blends1, ...blends2];
 
   switch (level) {
-    case 0: return consonants;
-    case 1: return digraphs;
-    case 2: return blends;
-    case 3: return [...consonants, ...digraphs, ...blends];
-    default: return consonants;
+    case 0: return consonants1;
+    case 1: return consonants2;
+    case 2: return consonants3;
+    case 3: return allConsonants;
+    case 4: return digraphs1;
+    case 5: return digraphs2;
+    case 6: return allDigraphs;
+    case 7: return blends1;
+    case 8: return blends2;
+    case 9: return allBlends;
+    case 10: return [...allConsonants, ...allDigraphs];
+    case 11: return [...allConsonants, ...allDigraphs, ...allBlends];
+    default: return consonants1;
   }
 }
 
 function generateRounds(level: number): RoundData[] {
   const pool = getPhonemePool(level);
   const rounds: RoundData[] = [];
-
-  // Use shuffled pool entries, cycling if needed
   const shuffled = shuffle(pool);
+
   for (let i = 0; i < TOTAL_ROUNDS; i++) {
     const entry = shuffled[i % shuffled.length];
     const correctWord = pickRandom(entry.words);
 
-    // Build distractors: pull from the entry's own distractors + other phoneme words
-    const otherWords: { word: string; image: string }[] = [];
+    // Build distractors from other phonemes + entry's own distractors
+    const otherWords: PhonemeWord[] = [];
     for (const other of pool) {
       if (other.phoneme !== entry.phoneme) {
         otherWords.push(...other.words);
@@ -82,7 +106,7 @@ function generateRounds(level: number): RoundData[] {
 
     // Deduplicate by word
     const seen = new Set<string>([correctWord.word]);
-    const uniqueOthers: { word: string; image: string }[] = [];
+    const uniqueOthers: PhonemeWord[] = [];
     for (const item of shuffle(otherWords)) {
       if (!seen.has(item.word)) {
         seen.add(item.word);
@@ -90,303 +114,276 @@ function generateRounds(level: number): RoundData[] {
       }
     }
 
-    // Pick 3 distractors
     const distractors = uniqueOthers.slice(0, CHOICES_PER_ROUND - 1);
-
-    // Build choices and shuffle
     const choices = shuffle([
       { ...correctWord, isCorrect: true },
       ...distractors.map((d) => ({ ...d, isCorrect: false })),
     ]);
-
     const correctIndex = choices.findIndex((c) => c.isCorrect);
 
-    rounds.push({
-      phoneme: entry.phoneme,
-      correctIndex,
-      choices,
-    });
+    rounds.push({ phoneme: entry.phoneme, correctIndex, choices });
   }
 
   return rounds;
 }
 
 // ---------------------------------------------------------------------------
-// Bush positions arranged in a semicircle
+// Preload images for upcoming round
 // ---------------------------------------------------------------------------
 
-const BUSH_POSITIONS: [number, number, number][] = [
-  [-3, 0, 0.5],
-  [-1, 0, -0.8],
-  [1, 0, -0.8],
-  [3, 0, 0.5],
-];
-
-const BUSH_COLORS = ['#2E7D32', '#388E3C', '#43A047', '#4CAF50'];
-
-// ---------------------------------------------------------------------------
-// 3D Components
-// ---------------------------------------------------------------------------
-
-/** Jungle ground */
-function JungleFloor() {
-  return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]} receiveShadow>
-      <planeGeometry args={[20, 12]} />
-      <meshStandardMaterial color="#3B7A2A" />
-    </mesh>
-  );
-}
-
-/** Simple tree mesh (cylinder trunk + cone canopy) */
-function Tree({ position }: { position: [number, number, number] }) {
-  return (
-    <group position={position}>
-      {/* Trunk */}
-      <mesh position={[0, 0.5, 0]}>
-        <cylinderGeometry args={[0.15, 0.2, 1.5, 8]} />
-        <meshStandardMaterial color="#6D4C2A" />
-      </mesh>
-      {/* Canopy */}
-      <mesh position={[0, 1.8, 0]}>
-        <coneGeometry args={[1.0, 2.0, 8]} />
-        <meshStandardMaterial color="#1B5E20" />
-      </mesh>
-    </group>
-  );
-}
-
-/** A bush that can be tapped, with a picture peeking out */
-function Bush({
-  position,
-  color,
-  image,
-  word,
-  onTap,
-  state,
-}: {
-  position: [number, number, number];
-  color: string;
-  image: string;
-  word: string;
-  onTap: () => void;
-  state: 'idle' | 'correct' | 'wrong';
-}) {
-  const groupRef = useRef<THREE.Group>(null);
-  const shakeRef = useRef(0);
-  const bounceRef = useRef(0);
-  const baseY = position[1];
-
+function usePreloadImages(urls: (string | undefined)[]) {
   useEffect(() => {
-    if (state === 'wrong') {
-      shakeRef.current = 1;
-    } else if (state === 'correct') {
-      bounceRef.current = 1;
-    }
-  }, [state]);
-
-  useFrame((_, delta) => {
-    if (!groupRef.current) return;
-
-    // Shake animation for wrong answer
-    if (shakeRef.current > 0) {
-      shakeRef.current -= delta * 4;
-      if (shakeRef.current < 0) shakeRef.current = 0;
-      groupRef.current.position.x =
-        position[0] + Math.sin(shakeRef.current * 30) * shakeRef.current * 0.2;
-    } else {
-      groupRef.current.position.x = position[0];
-    }
-
-    // Bounce animation for correct answer
-    if (bounceRef.current > 0) {
-      bounceRef.current -= delta * 2;
-      if (bounceRef.current < 0) bounceRef.current = 0;
-      groupRef.current.position.y =
-        baseY + Math.abs(Math.sin(bounceRef.current * Math.PI * 3)) * 0.8;
-    } else {
-      groupRef.current.position.y = baseY;
-    }
-  });
-
-  return (
-    <group
-      ref={groupRef}
-      position={position}
-      onClick={(e) => {
-        e.stopPropagation();
-        onTap();
-      }}
-      onPointerDown={(e) => {
-        e.stopPropagation();
-      }}
-    >
-      {/* Bush body - large sphere */}
-      <mesh position={[0, 0.3, 0]} castShadow>
-        <sphereGeometry args={[0.9, 16, 16]} />
-        <meshStandardMaterial
-          color={state === 'correct' ? '#FFD700' : color}
-        />
-      </mesh>
-      {/* Bush smaller top */}
-      <mesh position={[0, 0.9, 0]}>
-        <sphereGeometry args={[0.55, 12, 12]} />
-        <meshStandardMaterial
-          color={state === 'correct' ? '#FFC107' : color}
-        />
-      </mesh>
-
-      {/* Picture peeking out */}
-      <Billboard position={[0, 1.8, 0]}>
-        <Text fontSize={0.8} anchorX="center" anchorY="middle">
-          {image}
-        </Text>
-        <Text
-          fontSize={0.22}
-          color="#FFFFFF"
-          anchorX="center"
-          anchorY="middle"
-          position={[0, -0.55, 0]}
-          outlineWidth={0.02}
-          outlineColor="#000000"
-          fontWeight={700}
-        >
-          {word}
-        </Text>
-      </Billboard>
-    </group>
-  );
-}
-
-/** Celebration particles */
-function CelebrationParticles({ active }: { active: boolean }) {
-  const particlesRef = useRef<THREE.Points>(null);
-  const positionsRef = useRef<Float32Array | null>(null);
-  const velocitiesRef = useRef<number[]>([]);
-  const colorsRef = useRef<Float32Array | null>(null);
-
-  useEffect(() => {
-    if (active) {
-      const count = 40;
-      const positions = new Float32Array(count * 3);
-      const colors = new Float32Array(count * 3);
-      const velocities: number[] = [];
-      const palette = [
-        [1, 0.84, 0], [1, 0.42, 0.42], [0.3, 0.8, 0.5],
-        [0.27, 0.8, 0.82], [0.75, 0.56, 0.8],
-      ];
-      for (let i = 0; i < count; i++) {
-        positions[i * 3] = (Math.random() - 0.5) * 3;
-        positions[i * 3 + 1] = 0;
-        positions[i * 3 + 2] = (Math.random() - 0.5) * 3;
-        velocities.push(
-          (Math.random() - 0.5) * 4,
-          Math.random() * 5 + 2,
-          (Math.random() - 0.5) * 4,
-        );
-        const c = palette[i % palette.length];
-        colors[i * 3] = c[0];
-        colors[i * 3 + 1] = c[1];
-        colors[i * 3 + 2] = c[2];
+    urls.forEach((url) => {
+      if (url) {
+        const img = new Image();
+        img.src = url;
       }
-      positionsRef.current = positions;
-      velocitiesRef.current = velocities;
-      colorsRef.current = colors;
-    }
+    });
+  }, [urls.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+}
+
+// ---------------------------------------------------------------------------
+// Inject CSS keyframes (once on mount)
+// ---------------------------------------------------------------------------
+
+const KEYFRAMES_ID = 'safari-keyframes';
+const KEYFRAMES_CSS = `
+@keyframes safari-shake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-8px) rotate(-2deg); }
+  30% { transform: translateX(7px) rotate(2deg); }
+  45% { transform: translateX(-6px) rotate(-1deg); }
+  60% { transform: translateX(5px) rotate(1deg); }
+  75% { transform: translateX(-3px); }
+}
+@keyframes safari-bounce {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.15); }
+  50% { transform: scale(0.95); }
+  70% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+@keyframes safari-confetti-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(60vh) rotate(720deg); opacity: 0; }
+}
+@keyframes safari-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+`;
+
+function useInjectKeyframes() {
+  useEffect(() => {
+    if (document.getElementById(KEYFRAMES_ID)) return;
+    const style = document.createElement('style');
+    style.id = KEYFRAMES_ID;
+    style.textContent = KEYFRAMES_CSS;
+    document.head.appendChild(style);
+    return () => {
+      const el = document.getElementById(KEYFRAMES_ID);
+      if (el) el.remove();
+    };
+  }, []);
+}
+
+// ---------------------------------------------------------------------------
+// Safari Background
+// ---------------------------------------------------------------------------
+
+function SafariBackground() {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, overflow: 'hidden',
+      pointerEvents: 'none', userSelect: 'none',
+    }}>
+      {/* Sky → ground gradient */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(to bottom, #87CEEB 0%, #B0E0F0 50%, #6DBE45 50%, #3B7A2A 100%)',
+      }} />
+
+      {/* Sun */}
+      <img src="/kenney/bg/sun.png" alt="" style={{
+        position: 'absolute', top: '4%', right: '6%', width: 'clamp(50px, 8vw, 90px)',
+        opacity: 0.9, animation: 'safari-float 4s ease-in-out infinite',
+      }} />
+
+      {/* Clouds */}
+      <img src="/kenney/bg/cloud1.png" alt="" style={{
+        position: 'absolute', top: '6%', left: '5%', width: 'clamp(70px, 12vw, 130px)', opacity: 0.7,
+        animation: 'safari-float 5s ease-in-out infinite',
+      }} />
+      <img src="/kenney/bg/cloud2.png" alt="" style={{
+        position: 'absolute', top: '12%', left: '40%', width: 'clamp(60px, 10vw, 110px)', opacity: 0.5,
+        animation: 'safari-float 6s ease-in-out infinite 1s',
+      }} />
+      <img src="/kenney/bg/cloud3.png" alt="" style={{
+        position: 'absolute', top: '3%', right: '30%', width: 'clamp(50px, 9vw, 100px)', opacity: 0.6,
+        animation: 'safari-float 5.5s ease-in-out infinite 0.5s',
+      }} />
+
+      {/* Trees along horizon */}
+      <img src="/kenney/bg/tree.png" alt="" style={{
+        position: 'absolute', bottom: '46%', left: '2%', width: 'clamp(40px, 7vw, 80px)',
+      }} />
+      <img src="/kenney/bg/treePine.png" alt="" style={{
+        position: 'absolute', bottom: '46%', left: '15%', width: 'clamp(35px, 6vw, 70px)',
+      }} />
+      <img src="/kenney/bg/treePalm.png" alt="" style={{
+        position: 'absolute', bottom: '46%', right: '12%', width: 'clamp(40px, 7vw, 80px)',
+      }} />
+      <img src="/kenney/bg/tree.png" alt="" style={{
+        position: 'absolute', bottom: '46%', right: '2%', width: 'clamp(35px, 6vw, 65px)',
+      }} />
+
+      {/* Bushes on ground */}
+      <img src="/kenney/bg/bush1.png" alt="" style={{
+        position: 'absolute', bottom: '38%', left: '8%', width: 'clamp(30px, 5vw, 55px)',
+      }} />
+      <img src="/kenney/bg/bushAlt1.png" alt="" style={{
+        position: 'absolute', bottom: '38%', right: '8%', width: 'clamp(28px, 5vw, 50px)',
+      }} />
+      <img src="/kenney/bg/bush2.png" alt="" style={{
+        position: 'absolute', bottom: '36%', left: '50%', width: 'clamp(25px, 4vw, 45px)',
+        transform: 'translateX(-50%)',
+      }} />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// CSS Confetti
+// ---------------------------------------------------------------------------
+
+const CONFETTI_COLORS = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#C084FC', '#FF9F43', '#2ECC71'];
+
+function CssConfetti({ active }: { active: boolean }) {
+  const pieces = useMemo(() => {
+    if (!active) return [];
+    return Array.from({ length: 24 }, (_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+      delay: `${Math.random() * 0.5}s`,
+      duration: `${1.2 + Math.random() * 1}s`,
+      size: 6 + Math.random() * 6,
+    }));
   }, [active]);
 
-  useFrame((_, delta) => {
-    if (!active || !particlesRef.current || !positionsRef.current) return;
-    const positions = positionsRef.current;
-    const velocities = velocitiesRef.current;
-    const geom = particlesRef.current.geometry;
-
-    for (let i = 0; i < positions.length / 3; i++) {
-      positions[i * 3] += velocities[i * 3] * delta;
-      positions[i * 3 + 1] += velocities[i * 3 + 1] * delta;
-      positions[i * 3 + 2] += velocities[i * 3 + 2] * delta;
-      velocities[i * 3 + 1] -= 6 * delta;
-    }
-
-    geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geom.attributes.position.needsUpdate = true;
-  });
-
-  if (!active || !positionsRef.current || !colorsRef.current) return null;
+  if (!active) return null;
 
   return (
-    <points ref={particlesRef} position={[0, 0, 0]}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[positionsRef.current, 3]}
-        />
-        <bufferAttribute
-          attach="attributes-color"
-          args={[colorsRef.current, 3]}
-        />
-      </bufferGeometry>
-      <pointsMaterial vertexColors size={0.18} sizeAttenuation />
-    </points>
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 30 }}>
+      {pieces.map((p) => (
+        <div key={p.id} style={{
+          position: 'absolute',
+          top: '-10px',
+          left: p.left,
+          width: p.size,
+          height: p.size,
+          borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+          background: p.color,
+          animation: `safari-confetti-fall ${p.duration} ease-in ${p.delay} forwards`,
+        }} />
+      ))}
+    </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Scene
+// Choice Card
 // ---------------------------------------------------------------------------
 
-interface SceneProps {
-  roundData: RoundData;
-  bushStates: ('idle' | 'correct' | 'wrong')[];
-  onBushTap: (index: number) => void;
-  showCelebration: boolean;
-}
+type CardState = 'idle' | 'correct' | 'wrong';
 
-function Scene({ roundData, bushStates, onBushTap, showCelebration }: SceneProps) {
+function ChoiceCard({
+  choice,
+  state,
+  onTap,
+}: {
+  choice: PhonemeWord & { isCorrect: boolean };
+  state: CardState;
+  onTap: () => void;
+}) {
+  const animation =
+    state === 'wrong'
+      ? 'safari-shake 0.45s ease-in-out'
+      : state === 'correct'
+        ? 'safari-bounce 0.5s ease-out'
+        : 'none';
+
+  const bgColor =
+    state === 'correct'
+      ? 'rgba(255, 215, 0, 0.35)'
+      : state === 'wrong'
+        ? 'rgba(255, 80, 80, 0.2)'
+        : 'rgba(255, 255, 255, 0.18)';
+
+  const borderColor =
+    state === 'correct'
+      ? '#FFD700'
+      : state === 'wrong'
+        ? '#FF5050'
+        : 'rgba(255, 255, 255, 0.25)';
+
   return (
-    <>
-      {/* Lighting */}
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 10, 5]} intensity={0.7} castShadow />
-      <pointLight position={[-4, 6, 3]} intensity={0.3} color="#FFFACD" />
-      <hemisphereLight
-        color="#87CEEB"
-        groundColor="#3B7A2A"
-        intensity={0.4}
-      />
-
-      {/* Fixed camera */}
-      <OrbitControls enabled={false} />
-
-      {/* Sky background color */}
-      <color attach="background" args={['#87CEEB']} />
-
-      {/* Jungle floor */}
-      <JungleFloor />
-
-      {/* Background trees */}
-      <Tree position={[-5, -1, -3]} />
-      <Tree position={[-3.5, -1, -4]} />
-      <Tree position={[0, -1, -5]} />
-      <Tree position={[3.5, -1, -4]} />
-      <Tree position={[5, -1, -3]} />
-
-      {/* Bushes with pictures */}
-      {roundData.choices.map((choice, i) => (
-        <Bush
-          key={`bush-${i}`}
-          position={BUSH_POSITIONS[i]}
-          color={BUSH_COLORS[i]}
-          image={choice.image}
-          word={choice.word}
-          state={bushStates[i]}
-          onTap={() => onBushTap(i)}
+    <button
+      onClick={onTap}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 'clamp(4px, 1vw, 8px)',
+        background: bgColor,
+        border: `3px solid ${borderColor}`,
+        borderRadius: 'clamp(12px, 2vw, 20px)',
+        padding: 'clamp(10px, 2vw, 20px)',
+        cursor: 'pointer',
+        animation,
+        transition: 'background 0.2s, border-color 0.2s, transform 0.15s',
+        backdropFilter: 'blur(8px)',
+        boxShadow: state === 'correct'
+          ? '0 0 20px rgba(255, 215, 0, 0.4)'
+          : '0 4px 12px rgba(0,0,0,0.15)',
+        fontFamily: FONT,
+        minHeight: 'clamp(100px, 18vh, 160px)',
+        width: '100%',
+      }}
+      onPointerEnter={(e) => {
+        if (state === 'idle') e.currentTarget.style.transform = 'scale(1.05)';
+      }}
+      onPointerLeave={(e) => {
+        e.currentTarget.style.transform = 'scale(1)';
+      }}
+    >
+      {choice.asset ? (
+        <img
+          src={choice.asset}
+          alt={choice.word}
+          draggable={false}
+          style={{
+            width: 'clamp(60px, 14vw, 110px)',
+            height: 'clamp(60px, 14vw, 110px)',
+            objectFit: 'contain',
+          }}
         />
-      ))}
-
-      {/* Celebration particles */}
-      <CelebrationParticles active={showCelebration} />
-    </>
+      ) : (
+        <span style={{ fontSize: 'clamp(2.5rem, 8vw, 4.5rem)', lineHeight: 1 }}>
+          {choice.image}
+        </span>
+      )}
+      <span style={{
+        fontSize: 'clamp(0.85rem, 2.2vw, 1.2rem)',
+        fontWeight: 700,
+        color: '#FFFFFF',
+        textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+        textTransform: 'lowercase',
+      }}>
+        {choice.word}
+      </span>
+    </button>
   );
 }
 
@@ -401,21 +398,30 @@ export default function SoundSafari(props: BasicsGameProps) {
   const tts = useGameTTS();
   const audio = useGameAudio();
 
+  useInjectKeyframes();
+
   // Generate rounds on mount / level change
   const rounds = useMemo(() => generateRounds(level), [level]);
-
   const currentRound = rounds[round - 1] ?? rounds[0];
 
-  // Bush states for animation
-  const [bushStates, setBushStates] = useState<('idle' | 'correct' | 'wrong')[]>(
+  // Preload next round's images
+  const nextRoundAssets = useMemo(() => {
+    const next = rounds[round] ?? rounds[0];
+    return next.choices.map((c) => c.asset);
+  }, [rounds, round]);
+  usePreloadImages(nextRoundAssets);
+
+  // Card states for animation
+  const [cardStates, setCardStates] = useState<CardState[]>(
     Array(CHOICES_PER_ROUND).fill('idle'),
   );
   const [showCelebration, setShowCelebration] = useState(false);
   const [roundLocked, setRoundLocked] = useState(false);
+  const celebrationKey = useRef(0);
 
-  // Reset bush states on new round
+  // Reset on new round
   useEffect(() => {
-    setBushStates(Array(CHOICES_PER_ROUND).fill('idle'));
+    setCardStates(Array(CHOICES_PER_ROUND).fill('idle'));
     setShowCelebration(false);
     setRoundLocked(false);
   }, [round]);
@@ -439,8 +445,8 @@ export default function SoundSafari(props: BasicsGameProps) {
     }
   }, [phase, accuracy, onComplete]);
 
-  // Handle bush tap
-  const handleBushTap = useCallback(
+  // Handle card tap
+  const handleCardTap = useCallback(
     (index: number) => {
       if (phase !== 'playing' || roundLocked) return;
 
@@ -448,35 +454,31 @@ export default function SoundSafari(props: BasicsGameProps) {
 
       if (isCorrect) {
         setRoundLocked(true);
-        const newStates = Array(CHOICES_PER_ROUND).fill('idle') as ('idle' | 'correct' | 'wrong')[];
+        const newStates = Array(CHOICES_PER_ROUND).fill('idle') as CardState[];
         newStates[index] = 'correct';
-        setBushStates(newStates);
+        setCardStates(newStates);
+        celebrationKey.current += 1;
         setShowCelebration(true);
         audio.playChime();
         tts.sayEncouragement();
         submitAnswer(true);
-
-        setTimeout(() => {
-          nextRound();
-        }, 2000);
+        setTimeout(() => nextRound(), 2000);
       } else {
         audio.playBuzz();
-        const newStates = [...bushStates] as ('idle' | 'correct' | 'wrong')[];
+        const newStates = [...cardStates] as CardState[];
         newStates[index] = 'wrong';
-        setBushStates(newStates);
+        setCardStates(newStates);
         tts.sayRedirect();
-
-        // Reset the wrong state after shake
         setTimeout(() => {
-          setBushStates((prev) => {
-            const reset = [...prev] as ('idle' | 'correct' | 'wrong')[];
+          setCardStates((prev) => {
+            const reset = [...prev] as CardState[];
             reset[index] = 'idle';
             return reset;
           });
-        }, 600);
+        }, 500);
       }
     },
-    [phase, roundLocked, currentRound, bushStates, audio, tts, submitAnswer, nextRound],
+    [phase, roundLocked, currentRound, cardStates, audio, tts, submitAnswer, nextRound],
   );
 
   // Replay prompt
@@ -488,62 +490,43 @@ export default function SoundSafari(props: BasicsGameProps) {
     }
   }, [currentRound, tts]);
 
-  // ── Render ──
+  // ── Intro screen ──────────────────────────────────────────────────────
 
-  // Intro screen
   if (phase === 'intro') {
     return (
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%)',
-          color: '#FFFFFF',
-          fontFamily: 'sans-serif',
-        }}
-      >
+      <div style={{
+        width: '100%', height: '100%',
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        background: 'linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%)',
+        color: '#FFFFFF', fontFamily: FONT,
+      }}>
         <div style={{ fontSize: 'clamp(3rem, 8vw, 5rem)', marginBottom: '0.5rem' }}>
-          🦁
+          {'\uD83E\uDD81'}
         </div>
-        <h1
-          style={{
-            fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
-            margin: '0 0 0.5rem 0',
-            textAlign: 'center',
-          }}
-        >
+        <h1 style={{
+          fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
+          margin: '0 0 0.5rem 0', textAlign: 'center',
+        }}>
           Sound Safari
         </h1>
-        <p
-          style={{
-            fontSize: 'clamp(1rem, 3vw, 1.5rem)',
-            margin: '0 0 2rem 0',
-            opacity: 0.9,
-            textAlign: 'center',
-            padding: '0 1rem',
-          }}
-        >
+        <p style={{
+          fontSize: 'clamp(1rem, 3vw, 1.5rem)',
+          margin: '0 0 2rem 0', opacity: 0.9,
+          textAlign: 'center', padding: '0 1rem',
+        }}>
           Listen for the sound, then tap the matching picture!
         </p>
         <button
-          onClick={() => {
-            audio.playClick();
-            startGame();
-          }}
+          onClick={() => { audio.playClick(); startGame(); }}
           style={{
             fontSize: 'clamp(1.2rem, 3vw, 1.8rem)',
-            padding: '0.8rem 2.5rem',
-            borderRadius: '2rem',
+            padding: '0.8rem 2.5rem', borderRadius: '2rem',
             border: 'none',
             background: 'linear-gradient(135deg, #FFD700, #FFA000)',
-            color: '#1B5E20',
-            fontWeight: 700,
-            cursor: 'pointer',
+            color: '#1B5E20', fontWeight: 700, cursor: 'pointer',
             boxShadow: '0 4px 15px rgba(255, 215, 0, 0.4)',
+            fontFamily: FONT,
           }}
         >
           Start!
@@ -553,12 +536,10 @@ export default function SoundSafari(props: BasicsGameProps) {
           style={{
             marginTop: '1rem',
             fontSize: 'clamp(0.9rem, 2vw, 1.2rem)',
-            padding: '0.5rem 1.5rem',
-            borderRadius: '1rem',
+            padding: '0.5rem 1.5rem', borderRadius: '1rem',
             border: '2px solid rgba(255,255,255,0.3)',
-            background: 'transparent',
-            color: '#FFFFFF',
-            cursor: 'pointer',
+            background: 'transparent', color: '#FFFFFF',
+            cursor: 'pointer', fontFamily: FONT,
           }}
         >
           Back
@@ -567,72 +548,43 @@ export default function SoundSafari(props: BasicsGameProps) {
     );
   }
 
-  // Complete screen
+  // ── Complete screen ───────────────────────────────────────────────────
+
   if (phase === 'complete') {
     const stars = accuracy >= 90 ? 3 : accuracy >= 70 ? 2 : accuracy >= 50 ? 1 : 0;
     return (
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%)',
-          color: '#FFFFFF',
-          fontFamily: 'sans-serif',
-        }}
-      >
+      <div style={{
+        width: '100%', height: '100%',
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        background: 'linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%)',
+        color: '#FFFFFF', fontFamily: FONT,
+      }}>
         <div style={{ fontSize: 'clamp(3rem, 8vw, 5rem)', marginBottom: '0.5rem' }}>
-          🎉
+          {'\uD83C\uDF89'}
         </div>
-        <h1
-          style={{
-            fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
-            margin: '0 0 0.5rem 0',
-          }}
-        >
+        <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', margin: '0 0 0.5rem 0' }}>
           Safari Complete!
         </h1>
-        <p
-          style={{
-            fontSize: 'clamp(1.5rem, 4vw, 2rem)',
-            margin: '0.5rem 0',
-          }}
-        >
-          {'⭐'.repeat(stars)}{'☆'.repeat(3 - stars)}
+        <p style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', margin: '0.5rem 0' }}>
+          {'\u2B50'.repeat(stars)}{'\u2606'.repeat(3 - stars)}
         </p>
-        <p
-          style={{
-            fontSize: 'clamp(1rem, 3vw, 1.5rem)',
-            margin: '0 0 0.5rem 0',
-            opacity: 0.8,
-          }}
-        >
+        <p style={{ fontSize: 'clamp(1rem, 3vw, 1.5rem)', margin: '0 0 0.5rem 0', opacity: 0.8 }}>
           {score} / {totalRounds} sounds matched
         </p>
-        <p
-          style={{
-            fontSize: 'clamp(1rem, 2.5vw, 1.3rem)',
-            margin: '0 0 2rem 0',
-            opacity: 0.6,
-          }}
-        >
+        <p style={{ fontSize: 'clamp(1rem, 2.5vw, 1.3rem)', margin: '0 0 2rem 0', opacity: 0.6 }}>
           Accuracy: {accuracy}%
         </p>
         <button
           onClick={onBack}
           style={{
             fontSize: 'clamp(1.2rem, 3vw, 1.8rem)',
-            padding: '0.8rem 2.5rem',
-            borderRadius: '2rem',
+            padding: '0.8rem 2.5rem', borderRadius: '2rem',
             border: 'none',
             background: 'linear-gradient(135deg, #FFD700, #FFA000)',
-            color: '#1B5E20',
-            fontWeight: 700,
-            cursor: 'pointer',
+            color: '#1B5E20', fontWeight: 700, cursor: 'pointer',
             boxShadow: '0 4px 15px rgba(255, 215, 0, 0.4)',
+            fontFamily: FONT,
           }}
         >
           Done
@@ -641,103 +593,123 @@ export default function SoundSafari(props: BasicsGameProps) {
     );
   }
 
-  // Playing / Feedback: 3D scene
+  // ── Playing / Feedback ────────────────────────────────────────────────
+
   return (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        position: 'relative',
-        background: '#87CEEB',
-        fontFamily: 'sans-serif',
-      }}
-    >
-      {/* HUD strip at top */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '3.5rem',
-          background: 'rgba(0,0,0,0.7)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 1rem',
-          zIndex: 10,
-          color: '#FFFFFF',
-        }}
-      >
+    <div style={{
+      width: '100%', height: '100%',
+      position: 'relative', fontFamily: FONT,
+      overflow: 'hidden',
+    }}>
+      {/* Background scene */}
+      <SafariBackground />
+
+      {/* Confetti */}
+      <CssConfetti key={celebrationKey.current} active={showCelebration} />
+
+      {/* HUD strip */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0,
+        height: 'clamp(2.8rem, 6vh, 3.5rem)',
+        background: 'rgba(0,0,0,0.65)',
+        backdropFilter: 'blur(6px)',
+        display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 clamp(8px, 2vw, 16px)',
+        zIndex: 20, color: '#FFFFFF',
+      }}>
         <button
           onClick={onBack}
           style={{
-            fontSize: 'clamp(1rem, 2.5vw, 1.3rem)',
-            padding: '0.3rem 0.8rem',
-            borderRadius: '0.5rem',
+            fontSize: 'clamp(0.85rem, 2vw, 1.1rem)',
+            padding: '0.25rem 0.6rem', borderRadius: '0.5rem',
             border: '1px solid rgba(255,255,255,0.3)',
-            background: 'transparent',
-            color: '#FFFFFF',
-            cursor: 'pointer',
+            background: 'transparent', color: '#FFFFFF',
+            cursor: 'pointer', fontFamily: FONT, fontWeight: 600,
           }}
         >
-          Back
+          {'\u2190'} Back
         </button>
 
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.8rem',
-            fontSize: 'clamp(1rem, 3vw, 1.5rem)',
-          }}
-        >
-          <span
-            style={{
-              background: 'rgba(255,255,255,0.15)',
-              padding: '0.2rem 0.6rem',
-              borderRadius: '0.5rem',
-              fontWeight: 700,
-            }}
-          >
+        <div style={{
+          display: 'flex', alignItems: 'center',
+          gap: 'clamp(6px, 1.5vw, 12px)',
+          fontSize: 'clamp(0.9rem, 2.5vw, 1.3rem)',
+          fontWeight: 700,
+        }}>
+          <span style={{
+            background: 'rgba(255,255,255,0.15)',
+            padding: '0.15rem 0.5rem', borderRadius: '0.4rem',
+          }}>
             &ldquo;{currentRound.phoneme}&rdquo;
           </span>
-          <span style={{ opacity: 0.6 }}>|</span>
-          <span>
-            {round}/{totalRounds}
-          </span>
-          <span style={{ opacity: 0.6 }}>|</span>
+          <span style={{ opacity: 0.4 }}>|</span>
+          <span>{round}/{totalRounds}</span>
+          <span style={{ opacity: 0.4 }}>|</span>
           <span>Score: {score}</span>
         </div>
 
         <button
           onClick={handleReplay}
           style={{
-            fontSize: 'clamp(1.2rem, 3vw, 1.6rem)',
-            padding: '0.3rem 0.8rem',
-            borderRadius: '0.5rem',
+            fontSize: 'clamp(1.1rem, 2.5vw, 1.4rem)',
+            padding: '0.2rem 0.5rem', borderRadius: '0.5rem',
             border: '1px solid rgba(255,255,255,0.3)',
-            background: 'transparent',
-            cursor: 'pointer',
+            background: 'transparent', cursor: 'pointer',
+            fontFamily: FONT,
           }}
           title="Hear sound again"
         >
-          🔊
+          {'\uD83D\uDD0A'}
         </button>
       </div>
 
-      {/* 3D Canvas */}
-      <Canvas
-        camera={{ position: [0, 2, 5.5], fov: 55 }}
-        style={{ width: '100%', height: '100%' }}
-      >
-        <Scene
-          roundData={currentRound}
-          bushStates={bushStates}
-          onBushTap={handleBushTap}
-          showCelebration={showCelebration}
-        />
-      </Canvas>
+      {/* Phoneme prompt badge */}
+      <div style={{
+        position: 'absolute',
+        top: 'clamp(3.5rem, 8vh, 5rem)',
+        left: '50%', transform: 'translateX(-50%)',
+        zIndex: 15,
+        background: 'rgba(0,0,0,0.55)',
+        backdropFilter: 'blur(6px)',
+        borderRadius: '2rem',
+        padding: 'clamp(6px, 1.5vw, 12px) clamp(16px, 3vw, 28px)',
+        color: '#FFFFFF',
+        fontSize: 'clamp(1rem, 3vw, 1.5rem)',
+        fontWeight: 700,
+        textAlign: 'center',
+        whiteSpace: 'nowrap',
+      }}>
+        Find the picture that starts with{' '}
+        <span style={{
+          background: 'rgba(255, 215, 0, 0.3)',
+          padding: '2px 8px', borderRadius: '6px',
+          color: '#FFD700',
+        }}>
+          {currentRound.phoneme}
+        </span>
+      </div>
+
+      {/* Choice cards — 2x2 grid */}
+      <div style={{
+        position: 'absolute',
+        bottom: 'clamp(16px, 4vh, 40px)',
+        left: '50%', transform: 'translateX(-50%)',
+        width: 'clamp(280px, 75vw, 500px)',
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 'clamp(8px, 2vw, 16px)',
+        zIndex: 15,
+      }}>
+        {currentRound.choices.map((choice, i) => (
+          <ChoiceCard
+            key={`${round}-${i}`}
+            choice={choice}
+            state={cardStates[i]}
+            onTap={() => handleCardTap(i)}
+          />
+        ))}
+      </div>
     </div>
   );
 }
