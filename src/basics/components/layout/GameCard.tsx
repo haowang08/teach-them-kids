@@ -49,12 +49,27 @@ export default function GameCard({ game, progress, onClick }: GameCardProps) {
       </div>
 
       {/* Star progress */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 2, marginBottom: 6 }}>
-        {Array.from({ length: maxStars }, (_, i) => (
-          <span key={i} style={{ fontSize: '0.7rem', opacity: i < totalStars ? 1 : 0.25 }}>
-            {'\u2B50'}
-          </span>
-        ))}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 6, padding: '0 4px' }}>
+        <span style={{ fontSize: '0.85rem' }}>{'\u2B50'}</span>
+        <div style={{
+          flex: '1 1 auto',
+          maxWidth: 140,
+          height: 8,
+          borderRadius: 4,
+          background: 'rgba(255,255,255,0.15)',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            width: maxStars > 0 ? `${(totalStars / maxStars) * 100}%` : '0%',
+            height: '100%',
+            borderRadius: 4,
+            background: 'linear-gradient(90deg, #FFD700, #FFA000)',
+            transition: 'width 0.3s ease',
+          }} />
+        </div>
+        <span style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.8, whiteSpace: 'nowrap' }}>
+          {totalStars}/{maxStars}
+        </span>
       </div>
 
       {/* Level badge */}
