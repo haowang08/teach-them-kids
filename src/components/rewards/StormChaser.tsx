@@ -652,7 +652,6 @@ export default function StormChaser() {
 
           {/* Cities */}
           {CITIES.map((city) => {
-            const isTarget = step === 'warn' && city.id === currentEvent.warnCity;
             const showHighlight = step === 'warn';
             return (
               <div
