@@ -277,9 +277,14 @@ export const unsungHeroesRebels: Topic = {
       ],
       videos: [
         {
-          youtubeId: 'T_sGTspaF4Y',
-          title: 'Decolonization and Nationalism Triumphant: Crash Course World History #40',
-          channelName: 'CrashCourse',
+          youtubeId: 'ftcvaJCKVjs',
+          title: 'Solidarity and the Fall of Communism',
+          channelName: 'History',
+        },
+        {
+          youtubeId: 'wr3kUfW2fM0',
+          title: 'The Fall of the Berlin Wall',
+          channelName: 'History',
         },
       ],
       quizIds: ['rebels-q7', 'rebels-q8'],
@@ -340,13 +345,8 @@ export const unsungHeroesRebels: Topic = {
       ],
       videos: [
         {
-          youtubeId: 'ftcvaJCKVjs',
-          title: 'Solidarity and the Fall of Communism',
-          channelName: 'History',
-        },
-        {
-          youtubeId: 'wr3kUfW2fM0',
-          title: 'The Fall of the Berlin Wall',
+          youtubeId: 'f0-n_nWOYOQ',
+          title: 'Solidarity: The Movement That Changed Europe',
           channelName: 'History',
         },
       ],

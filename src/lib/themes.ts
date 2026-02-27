@@ -1251,6 +1251,27 @@ export const givingAndSharingTheme: TopicTheme = {
     'linear-gradient(90deg, #D4A017, #AD1457, #D4A017)',
 };
 
+export const scienceTheme: TopicTheme = {
+  id: 'science',
+  colors: {
+    gold: '#00BFA5',
+    primary: '#0D1B2A',
+    secondary: '#1B3A4B',
+    cream: '#E8F5F1',
+    accent: '#00897B',
+    darkBrown: '#0A1628',
+    sand: '#B2DFDB',
+    bronze: '#00796B',
+    goldLight: '#80CBC4',
+  },
+  heroGradient:
+    'linear-gradient(180deg, rgba(13, 27, 42, 0.95) 0%, rgba(27, 58, 75, 0.85) 50%, rgba(0, 121, 107, 0.9) 100%)',
+  navGradient:
+    'linear-gradient(90deg, #0D1B2A, #1B3A4B, #0D1B2A)',
+  sectionBorderGradient:
+    'linear-gradient(90deg, #00BFA5, #00796B, #00BFA5)',
+};
+
 export const unsungHeroesTheme: TopicTheme = {
   id: 'unsung-heroes',
   colors: {
@@ -1339,6 +1360,8 @@ export const themes: Record<string, TopicTheme> = {
   'giving-and-sharing': givingAndSharingTheme,
   // Unsung Heroes
   'unsung-heroes': unsungHeroesTheme,
+  // Science
+  'science': scienceTheme,
 };
 
 export function getTheme(themeId: string): TopicTheme | undefined {

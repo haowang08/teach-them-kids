@@ -152,9 +152,9 @@ export const unsungHeroesWorkersRights: Topic = {
       ],
       videos: [
         {
-          youtubeId: 'YqmPE2HtkyU',
-          title: 'Why Do Americans and Canadians Celebrate Labor Day?',
-          channelName: 'TED-Ed',
+          youtubeId: 'FguWSsW21CQ',
+          title: 'The Rise of Labor Unions',
+          channelName: 'History',
         },
       ],
       quizIds: ['workers-q3', 'workers-q4'],
@@ -206,9 +206,9 @@ export const unsungHeroesWorkersRights: Topic = {
       ],
       videos: [
         {
-          youtubeId: 'FguWSsW21CQ',
-          title: 'The Rise of Labor Unions',
-          channelName: 'History',
+          youtubeId: 'YqmPE2HtkyU',
+          title: 'Why Do Americans and Canadians Celebrate Labor Day?',
+          channelName: 'TED-Ed',
         },
       ],
       quizIds: ['workers-q5', 'workers-q6'],

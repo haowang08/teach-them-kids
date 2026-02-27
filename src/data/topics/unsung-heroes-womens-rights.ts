@@ -206,6 +206,11 @@ export const unsungHeroesWomensRights: Topic = {
       ],
       videos: [
         {
+          youtubeId: 'ChQBHSL8vVg',
+          title: 'The Right to Learn',
+          channelName: 'TED-Ed',
+        },
+        {
           youtubeId: 'fM1czS_VYDI',
           title: 'Women in the 19th Century: Crash Course US History #16',
           channelName: 'CrashCourse',

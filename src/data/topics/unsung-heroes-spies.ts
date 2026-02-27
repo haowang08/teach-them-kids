@@ -144,9 +144,9 @@ export const unsungHeroesSpies: Topic = {
       ],
       videos: [
         {
-          youtubeId: 'Y7zyB7rsvHU',
-          title: 'From Pacifist to Spy: WWII\'s Surprising Secret Agent',
-          channelName: 'TED-Ed',
+          youtubeId: 'sPH5cOHD4Z0',
+          title: 'Virginia Hall: The Most Dangerous Allied Spy',
+          channelName: 'History',
         },
       ],
       quizIds: ['spies-q3', 'spies-q4'],
@@ -207,7 +207,7 @@ export const unsungHeroesSpies: Topic = {
       ],
       videos: [
         {
-          youtubeId: 'sPH5cOHD4Z0',
+          youtubeId: 'kQ05ycJwKkM',
           title: 'The Spy Who Saved D-Day',
           channelName: 'History',
         },
@@ -262,9 +262,9 @@ export const unsungHeroesSpies: Topic = {
       ],
       videos: [
         {
-          youtubeId: 'kQ05ycJwKkM',
+          youtubeId: 'Y7zyB7rsvHU',
           title: 'Noor Inayat Khan: The Spy Princess',
-          channelName: 'History',
+          channelName: 'TED-Ed',
         },
       ],
       quizIds: ['spies-q7', 'spies-q8'],

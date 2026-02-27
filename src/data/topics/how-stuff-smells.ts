@@ -112,6 +112,16 @@ export const howStuffSmells: Topic = {
           title: 'Why Do Some Farts Smell So Bad?',
           channelName: 'SciShow',
         },
+        {
+          youtubeId: '3CVoTfcdd4w',
+          title: 'Why Do We Burp and Fart (So Much)?!',
+          channelName: 'SciShow',
+        },
+        {
+          youtubeId: 'zfttRfTmtuE',
+          title: 'The world\'s most dangerous fart - Nick Caruso and Dani Rabaiotti',
+          channelName: 'TED-Ed',
+        },
       ],
       quizIds: ['smell-q3', 'smell-q4'],
     },
@@ -190,11 +200,6 @@ export const howStuffSmells: Topic = {
           title: 'The World\'s Smelliest Flower',
           channelName: 'SciShow Kids',
         },
-        {
-          youtubeId: 'zfttRfTmtuE',
-          title: 'The world\'s most dangerous fart - Nick Caruso and Dani Rabaiotti',
-          channelName: 'TED-Ed',
-        },
       ],
       quizIds: ['smell-q7', 'smell-q8'],
     },
@@ -233,8 +238,8 @@ export const howStuffSmells: Topic = {
       ],
       videos: [
         {
-          youtubeId: '3CVoTfcdd4w',
-          title: 'Why Do We Burp and Fart (So Much)?!',
+          youtubeId: 'QNTRGa3ZSKg',
+          title: 'Smelly Animals and Why They Stink',
           channelName: 'SciShow',
         },
       ],
