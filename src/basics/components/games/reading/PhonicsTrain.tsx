@@ -41,16 +41,29 @@ interface WordEntry {
   image: string;
 }
 
+const SIGHT_WORD_IMAGES: Record<string, string> = {
+  the: '\u{1F449}', and: '\u{1F91D}', is: '\u{1F7F0}', it: '\u{1F449}',
+  you: '\u{1F9D1}', he: '\u{1F466}', she: '\u{1F467}', we: '\u{1F46B}',
+  was: '\u23F3', are: '\u2728', can: '\u{1F4AA}', not: '\u{274C}',
+  but: '\u{1F449}', all: '\u{1F30D}', had: '\u2705', her: '\u{1F467}',
+  one: '\u{1F446}', our: '\u{1F3E0}', out: '\u{1F6AA}', day: '\u2600\uFE0F',
+  get: '\u{1F91A}', has: '\u2705', him: '\u{1F466}', how: '\u{1F914}',
+  its: '\u{1F449}', may: '\u{1F33C}', new: '\u2728', now: '\u23F0',
+  old: '\u{1F9D3}', see: '\u{1F440}', two: '\u270C\uFE0F', way: '\u{1F6A9}',
+  who: '\u{1F914}', did: '\u2705', big: '\u{1F4A5}', let: '\u{1F44D}',
+  say: '\u{1F4AC}', too: '\u{1F91D}',
+};
+
 function getWordsForLevel(level: number): WordEntry[] {
   switch (level) {
     case 0: return pickN(CVC_WORDS, 8);
     case 1: return pickN(CCVC_WORDS, 8);
     case 2: return pickN(CVCC_WORDS, 8);
     case 3: {
-      // Sight words don't have images, make WordEntry with a generic emoji
+      // Sight words with contextual emoji images
       const allSight = SIGHT_WORDS.flat();
       const picked = pickN(allSight, 8);
-      return picked.map((w) => ({ word: w, image: '\u2B50' }));
+      return picked.map((w) => ({ word: w, image: SIGHT_WORD_IMAGES[w] ?? '\u2B50' }));
     }
     default: return pickN(CVC_WORDS, 8);
   }
@@ -609,10 +622,7 @@ export default function PhonicsTrain(props: BasicsGameProps) {
         // Move to next round after a short delay
         setTimeout(() => {
           nextRound();
-          setCurrentLetterIndex(0);
-          setCompletedLetters([]);
           setRoundKey((k) => k + 1);
-          setWrongThisRound(false);
         }, 1500);
       }
     },
@@ -701,7 +711,7 @@ export default function PhonicsTrain(props: BasicsGameProps) {
 
   // ── Playing / Feedback ──
   return (
-    <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
+    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <Canvas
         camera={{ position: [0, 4, 7], fov: 50 }}
         style={{ width: '100%', height: '100%' }}
@@ -756,7 +766,7 @@ export default function PhonicsTrain(props: BasicsGameProps) {
 
 const overlayStyle: React.CSSProperties = {
   width: '100%',
-  height: '100vh',
+  height: '100%',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',

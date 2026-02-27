@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import { useRef, useState, useEffect, useMemo, useCallback, type CSSProperties } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Float, Text } from '@react-three/drei';
 import type * as THREE from 'three';
@@ -172,31 +172,33 @@ function AnimatedTreat({
   delay: number;
 }) {
   const ref = useRef<THREE.Group>(null);
-  const startTime = useRef(0);
+  const elapsedRef = useRef(0);
+  const delayElapsedRef = useRef(0);
   const started = useRef(false);
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     if (!ref.current) return;
     if (!animate) {
       ref.current.position.set(startPos[0], startPos[1], startPos[2]);
       started.current = false;
-      startTime.current = 0;
+      elapsedRef.current = 0;
+      delayElapsedRef.current = 0;
       return;
     }
 
     if (!started.current) {
-      startTime.current = Date.now() + delay;
       started.current = true;
+      delayElapsedRef.current = 0;
+      elapsedRef.current = 0;
     }
 
-    const now = Date.now();
-    if (now < startTime.current) return;
+    delayElapsedRef.current += delta * 1000; // convert to ms
+    if (delayElapsedRef.current < delay) return;
 
-    const elapsed = (now - startTime.current) / 800; // 800ms flight
-    const t = Math.min(elapsed, 1);
+    elapsedRef.current += delta * 1000;
+    const t = Math.min(elapsedRef.current / 800, 1);
     const eased = t * (2 - t); // ease-out
 
-    // Lerp with arc
     const x = startPos[0] + (targetPos[0] - startPos[0]) * eased;
     const z = startPos[2] + (targetPos[2] - startPos[2]) * eased;
     const arcHeight = Math.sin(t * Math.PI) * 1.5;
@@ -234,6 +236,11 @@ function AnswerBubble({
 }) {
   const ref = useRef<THREE.Group>(null);
   const wobbleStart = useRef(0);
+
+  // Cleanup cursor on unmount
+  useEffect(() => {
+    return () => { document.body.style.cursor = 'default'; };
+  }, []);
 
   useFrame(() => {
     if (!ref.current) return;
@@ -438,6 +445,12 @@ export default function DivisionBakery(props: BasicsGameProps) {
 
   const [wrongIndex, setWrongIndex] = useState<number | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [wrongThisRound, setWrongThisRound] = useState(false);
+
+  // Reset wrongThisRound when round changes
+  useEffect(() => {
+    setWrongThisRound(false);
+  }, [game.round]);
 
   // Auto-start the game
   useEffect(() => {
@@ -482,7 +495,7 @@ export default function DivisionBakery(props: BasicsGameProps) {
         tts.sayEncouragement();
         setShowCelebration(true);
         setWrongIndex(null);
-        game.submitAnswer(true);
+        game.submitAnswer(!wrongThisRound);
 
         // Move to next round after a delay (longer to allow flying animation)
         setTimeout(() => {
@@ -492,6 +505,7 @@ export default function DivisionBakery(props: BasicsGameProps) {
       } else {
         // Wrong - wobble
         audio.playBuzz();
+        setWrongThisRound(true);
         tts.sayRedirect();
         setWrongIndex(index);
         setTimeout(() => setWrongIndex(null), 700);
@@ -529,6 +543,12 @@ export default function DivisionBakery(props: BasicsGameProps) {
         <p style={{ fontSize: '1.1rem', opacity: 0.8, margin: 0 }}>
           {game.score} / {game.totalRounds} correct ({game.accuracy}%)
         </p>
+        <button
+          onClick={onBack}
+          style={doneButtonStyle}
+        >
+          Done
+        </button>
       </div>
     );
   }
@@ -594,3 +614,16 @@ export default function DivisionBakery(props: BasicsGameProps) {
     </div>
   );
 }
+
+const doneButtonStyle: CSSProperties = {
+  marginTop: 20,
+  background: 'rgba(255,255,255,0.2)',
+  border: '2px solid rgba(255,255,255,0.4)',
+  borderRadius: 12,
+  padding: '10px 24px',
+  color: '#fff',
+  fontSize: '1.2rem',
+  fontWeight: 700,
+  cursor: 'pointer',
+  fontFamily: "'Comic Sans MS', cursive",
+};

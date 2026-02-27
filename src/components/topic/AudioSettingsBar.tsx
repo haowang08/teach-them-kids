@@ -26,7 +26,7 @@ export default function AudioSettingsBar() {
   }
 
   return (
-    <div className="sticky top-14 z-30 bg-[var(--topic-cream)] border-b border-[var(--topic-bronze)]/20">
+    <div className="sticky top-14 z-30 bg-[var(--topic-cream,#F5EDE0)] border-b border-[var(--topic-bronze,#8B6914)]/30 shadow-sm backdrop-blur-sm">
       {/* Mobile toggle */}
       <button
         onClick={() => setExpanded((prev) => !prev)}

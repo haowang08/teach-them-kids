@@ -14,7 +14,7 @@ import { useGameAudio } from '../../../hooks/useGameAudio.ts';
 // ---------------------------------------------------------------------------
 
 const TOTAL_ROUNDS = 8;
-const TOTAL_PLANKS = 10; // total planks on bridge, one missing per round
+const TOTAL_PLANKS = 8; // total planks on bridge, one missing per round
 const PLANK_WIDTH = 0.8;
 const PLANK_GAP = 0.15;
 const BRIDGE_Y = 1.5;
@@ -49,6 +49,18 @@ function AnimatedPlank({
   const arrivedRef = useRef(false);
   const startY = targetPosition[1] - 3;
 
+  // Reset arrivedRef when active transitions from false to true (new round)
+  const prevActive = useRef(false);
+  useEffect(() => {
+    if (active && !prevActive.current) {
+      arrivedRef.current = false;
+      if (ref.current) {
+        ref.current.position.set(targetPosition[0], startY, targetPosition[2]);
+      }
+    }
+    prevActive.current = active;
+  }, [active, targetPosition, startY]);
+
   useFrame(() => {
     if (!ref.current || !active) return;
     const target = new THREE.Vector3(...targetPosition);
@@ -75,12 +87,12 @@ function Character({ posX, walking }: { posX: number; walking: boolean }) {
   const targetX = useRef(posX);
   targetX.current = posX;
 
-  useFrame(() => {
+  useFrame((state) => {
     if (!ref.current) return;
     ref.current.position.x += (targetX.current - ref.current.position.x) * 0.05;
     // simple bobbing while walking
     if (walking) {
-      ref.current.position.y = BRIDGE_Y + 0.65 + Math.sin(Date.now() * 0.008) * 0.05;
+      ref.current.position.y = BRIDGE_Y + 0.65 + Math.sin(state.clock.elapsedTime * 8) * 0.05;
     }
   });
 
@@ -163,12 +175,16 @@ function AnswerPlank({
         position={position}
         onClick={(e) => {
           e.stopPropagation();
-          onTap();
+          if (state === 'idle') onTap();
         }}
       >
         <mesh>
           <boxGeometry args={[1, 0.5, 0.6]} />
-          <meshStandardMaterial color="#A0724A" />
+          <meshStandardMaterial
+            color={state === 'wrong' ? '#888888' : '#A0724A'}
+            transparent={state === 'wrong'}
+            opacity={state === 'wrong' ? 0.4 : 1}
+          />
         </mesh>
         <Text
           position={[0, 0, 0.31]}
@@ -266,7 +282,7 @@ function BridgeScene({
   // Answer plank positions (below the bridge, spread out)
   const answerPositions = useMemo<[number, number, number][]>(() => {
     const startX = BRIDGE_START_X + 1;
-    return problem.choices.map((_, i) => [startX + i * 1.6, BRIDGE_Y - 2.2, 0]);
+    return problem.choices.map((_, i) => [startX + i * 1.6, BRIDGE_Y - 1.6, 0]);
   }, [problem.choices]);
 
   return (
@@ -376,6 +392,7 @@ export default function NumberBridge(props: BasicsGameProps) {
   const [filledPlanks, setFilledPlanks] = useState<Set<number>>(() => new Set());
   const [characterX, setCharacterX] = useState(BRIDGE_START_X - 1.5);
   const walkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [wrongThisRound, setWrongThisRound] = useState(false);
 
   // Gap index for current round
   const gapIndex = useMemo(() => {
@@ -394,6 +411,7 @@ export default function NumberBridge(props: BasicsGameProps) {
   useEffect(() => {
     setAnswerStates(new Array(4).fill('idle') as ('idle' | 'wrong' | 'correct' | 'hidden')[]);
     setPlankFlying(false);
+    setWrongThisRound(false);
 
     if (game.phase === 'playing' && currentProblem) {
       tts.saySentence(
@@ -434,17 +452,18 @@ export default function NumberBridge(props: BasicsGameProps) {
         tts.sayEncouragement();
         setAnswerStates((prev) => prev.map((_s, i) => (i === choiceIndex ? 'correct' : 'hidden')));
         setPlankFlying(true);
-        game.submitAnswer(true);
+        game.submitAnswer(!wrongThisRound);
       } else {
         // Wrong
         audio.playBuzz();
+        setWrongThisRound(true);
         tts.sayRedirect();
         setAnswerStates((prev) =>
           prev.map((s, i) => (i === choiceIndex ? 'wrong' : s)),
         );
       }
     },
-    [game, currentProblem, plankFlying, audio, tts],
+    [game, currentProblem, plankFlying, audio, tts, wrongThisRound],
   );
 
   // Handle intro
@@ -476,9 +495,9 @@ export default function NumberBridge(props: BasicsGameProps) {
   }, []);
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <Canvas
-        camera={{ position: [0, 3, 8], fov: 50 }}
+        camera={{ position: [0, 2, 10], fov: 60 }}
         gl={{ antialias: true }}
         onCreated={({ gl }) => gl.setClearColor('#87CEEB')}
       >
@@ -591,6 +610,24 @@ export default function NumberBridge(props: BasicsGameProps) {
           <p style={{ fontSize: '1.4rem' }}>
             {game.score} / {TOTAL_ROUNDS} correct ({game.accuracy}%)
           </p>
+          <button
+            onClick={onBack}
+            style={{
+              marginTop: 20,
+              background: 'rgba(255,255,255,0.2)',
+              border: '2px solid rgba(255,255,255,0.4)',
+              borderRadius: 12,
+              padding: '10px 24px',
+              color: '#FFF',
+              fontSize: '1.2rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: "'Comic Sans MS', cursive",
+              pointerEvents: 'auto',
+            }}
+          >
+            Done
+          </button>
         </div>
       )}
     </div>

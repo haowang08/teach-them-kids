@@ -148,18 +148,6 @@ function LetterBlock({
     }
   });
 
-  // Expose shake trigger via a custom property
-  const triggerShake = useCallback(() => {
-    shakeRef.current = 1;
-  }, []);
-
-  // Attach triggerShake to ref so parent can access it
-  useEffect(() => {
-    if (meshRef.current) {
-      (meshRef.current as THREE.Mesh & { triggerShake?: () => void }).triggerShake = triggerShake;
-    }
-  }, [triggerShake]);
-
   if (!visible) return null;
 
   return (
@@ -276,8 +264,12 @@ function CelebrationParticles({ active }: { active: boolean }) {
       velocities[i * 3 + 1] -= 5 * delta;
     }
 
-    geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geom.attributes.position.needsUpdate = true;
+    const attr = geom.getAttribute('position') as THREE.BufferAttribute;
+    if (attr) {
+      attr.needsUpdate = true;
+    } else {
+      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    }
   });
 
   if (!active || !positionsRef.current) return null;
@@ -402,6 +394,7 @@ export default function WordBuilder(props: BasicsGameProps) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [wrongShake, setWrongShake] = useState(false);
   const [roundComplete, setRoundComplete] = useState(false);
+  const [wrongThisRound, setWrongThisRound] = useState(false);
 
   // Reset slots when round changes
   useEffect(() => {
@@ -409,6 +402,7 @@ export default function WordBuilder(props: BasicsGameProps) {
     setShowCelebration(false);
     setRoundComplete(false);
     setWrongShake(false);
+    setWrongThisRound(false);
   }, [round]);
 
   // Speak word when round starts
@@ -448,7 +442,7 @@ export default function WordBuilder(props: BasicsGameProps) {
           setShowCelebration(true);
           audio.playChime();
           tts.sayEncouragement();
-          submitAnswer(true);
+          submitAnswer(!wrongThisRound);
 
           // Auto advance after celebration
           setTimeout(() => {
@@ -459,6 +453,7 @@ export default function WordBuilder(props: BasicsGameProps) {
         // Wrong letter
         audio.playBuzz();
         setWrongShake(true);
+        setWrongThisRound(true);
         tts.sayRedirect();
         setTimeout(() => setWrongShake(false), 500);
       }

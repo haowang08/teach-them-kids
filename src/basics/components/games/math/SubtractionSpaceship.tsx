@@ -477,6 +477,7 @@ export default function SubtractionSpaceship(props: BasicsGameProps) {
   const [bubbleStates, setBubbleStates] = useState<Record<number, 'idle' | 'correct' | 'wrong'>>({});
   const [answered, setAnswered] = useState(false);
   const [aliensLeft, setAliensLeft] = useState(false);
+  const [wrongThisRound, setWrongThisRound] = useState(false);
 
   // Reset per-round state when round changes
   useEffect(() => {
@@ -491,6 +492,7 @@ export default function SubtractionSpaceship(props: BasicsGameProps) {
       setBubbleStates({});
       setAnswered(false);
       setAliensLeft(false);
+      setWrongThisRound(false);
 
       // Narrate and then animate aliens leaving
       const speakTimer = setTimeout(() => {
@@ -501,7 +503,6 @@ export default function SubtractionSpaceship(props: BasicsGameProps) {
 
       // Animate aliens leaving after a delay
       const leaveTimer = setTimeout(() => {
-        setAliensLeft(true);
         setAlienStates((prev) => {
           const next = [...prev];
           // The last B aliens leave
@@ -513,10 +514,15 @@ export default function SubtractionSpaceship(props: BasicsGameProps) {
           return next;
         });
       }, 1500);
+      // Set aliensLeft after animation completes (1500ms start + ~1300ms flight)
+      const readyTimer = setTimeout(() => {
+        setAliensLeft(true);
+      }, 2800);
 
       return () => {
         clearTimeout(speakTimer);
         clearTimeout(leaveTimer);
+        clearTimeout(readyTimer);
       };
     }
   }, [phase, round]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -537,6 +543,10 @@ export default function SubtractionSpaceship(props: BasicsGameProps) {
           : 'Good try, space cadet! Keep practicing!',
       );
       audio.playLevelUp();
+      const timer = setTimeout(() => {
+        onComplete(accuracy);
+      }, 2500);
+      return () => clearTimeout(timer);
     }
   }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -553,7 +563,7 @@ export default function SubtractionSpaceship(props: BasicsGameProps) {
         setAnswered(true);
         audio.playChime();
         tts.sayEncouragement();
-        submitAnswer(true);
+        submitAnswer(!wrongThisRound);
 
         // Move to next round after celebration
         setTimeout(() => {
@@ -565,6 +575,7 @@ export default function SubtractionSpaceship(props: BasicsGameProps) {
         // Wrong
         setBubbleStates((prev) => ({ ...prev, [value]: 'wrong' }));
         audio.playBuzz();
+        setWrongThisRound(true);
         tts.sayRedirect();
 
         // Reset wrong state after wobble
@@ -614,24 +625,16 @@ export default function SubtractionSpaceship(props: BasicsGameProps) {
             </span>
           ))}
         </div>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <button onClick={onBack} style={hudBtnStyle}>
-            {'\u2190'} Back
-          </button>
-          <button
-            onClick={() => onComplete(accuracy)}
-            style={{ ...hudBtnStyle, background: '#283593' }}
-          >
-            Done {'\u2714'}
-          </button>
-        </div>
+        <button onClick={onBack} style={{ ...hudBtnStyle, background: '#283593' }}>
+          Done {'\u2714'}
+        </button>
       </div>
     );
   }
 
   // ── Main game rendering ──
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <Canvas
         camera={{ position: [0, 0, 6], fov: 50 }}
         style={{ width: '100%', height: '100%' }}

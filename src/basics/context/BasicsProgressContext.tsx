@@ -36,7 +36,7 @@ function defaultProgress(): BasicsProgress {
 
 function defaultGameProgress(): GameProgress {
   return {
-    currentLevel: 1,
+    currentLevel: 0,
     levels: {},
     totalPlayTimeMs: 0,
   };
@@ -112,13 +112,17 @@ export function BasicsProgressProvider({ children }: { children: ReactNode }) {
   const completeLevel = useCallback(
     (gameId: GameId, level: number, accuracy: number) => {
       setProgress((prev) => {
-        const next = structuredClone(prev);
+        const next: BasicsProgress = {
+          ...prev,
+          games: { ...prev.games },
+        };
 
         // Ensure game entry exists
         if (!next.games[gameId]) {
           next.games[gameId] = defaultGameProgress();
         }
 
+        next.games[gameId] = { ...next.games[gameId]!, levels: { ...next.games[gameId]!.levels } };
         const gp = next.games[gameId]!;
         const existing = gp.levels[level];
         const stars = starsFromAccuracy(accuracy);
@@ -146,12 +150,13 @@ export function BasicsProgressProvider({ children }: { children: ReactNode }) {
 
   const addPlayTime = useCallback((gameId: GameId, ms: number) => {
     setProgress((prev) => {
-      const next = structuredClone(prev);
+      const next: BasicsProgress = { ...prev, games: { ...prev.games } };
 
       if (!next.games[gameId]) {
         next.games[gameId] = defaultGameProgress();
       }
 
+      next.games[gameId] = { ...next.games[gameId]! };
       next.games[gameId]!.totalPlayTimeMs += ms;
       next.lastActivity = new Date().toISOString();
 

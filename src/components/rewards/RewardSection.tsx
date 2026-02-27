@@ -64,6 +64,16 @@ const KindnessRipple = lazy(() => import('./KindnessRipple'));
 const CityPlanner = lazy(() => import('./CityPlanner'));
 const ZerosJourney = lazy(() => import('./ZerosJourney'));
 const TajArchitect = lazy(() => import('./TajArchitect'));
+const SpyNetworkBuilder = lazy(() => import('./SpyNetworkBuilder'));
+const FactoryInspector = lazy(() => import('./FactoryInspector'));
+const VoicesOfChange = lazy(() => import('./VoicesOfChange'));
+const MarchForJustice = lazy(() => import('./MarchForJustice'));
+const RevolutionTimeline = lazy(() => import('./RevolutionTimeline'));
+const SmellLab = lazy(() => import('./SmellLab'));
+const ScienceHallOfFame = lazy(() => import('./ScienceHallOfFame'));
+const EcosystemBuilder = lazy(() => import('./EcosystemBuilder'));
+const StormChaser = lazy(() => import('./StormChaser'));
+const ClimateDashboard = lazy(() => import('./ClimateDashboard'));
 
 function RewardLoading() {
   return (
@@ -423,6 +433,46 @@ export default function RewardSection({ reward, topicId }: RewardSectionProps) {
 
             {reward.type === 'taj-architect' && (
               <TajArchitect />
+            )}
+
+            {reward.type === 'spy-network-builder' && (
+              <SpyNetworkBuilder />
+            )}
+
+            {reward.type === 'factory-inspector' && (
+              <FactoryInspector />
+            )}
+
+            {reward.type === 'voices-of-change' && (
+              <VoicesOfChange />
+            )}
+
+            {reward.type === 'march-for-justice' && (
+              <MarchForJustice />
+            )}
+
+            {reward.type === 'revolution-timeline' && (
+              <RevolutionTimeline />
+            )}
+
+            {reward.type === 'smell-lab' && (
+              <SmellLab />
+            )}
+
+            {reward.type === 'science-hall-of-fame' && (
+              <ScienceHallOfFame />
+            )}
+
+            {reward.type === 'ecosystem-builder' && (
+              <EcosystemBuilder />
+            )}
+
+            {reward.type === 'storm-chaser' && (
+              <StormChaser />
+            )}
+
+            {reward.type === 'climate-dashboard' && (
+              <ClimateDashboard />
             )}
           </div>
           </FullscreenWrapper>

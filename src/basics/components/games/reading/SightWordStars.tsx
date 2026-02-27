@@ -45,7 +45,12 @@ function pickRoundWords(
   const target = unused.length > 0 ? pickRandom(unused) : pickRandom(pool);
 
   // Pick 3 distractors different from target
-  const distractorPool = pool.filter((w) => w !== target);
+  let distractorPool = pool.filter((w) => w !== target);
+  // Safety: if not enough distractors from this level, pull from other levels
+  if (distractorPool.length < 3) {
+    const allWords = SIGHT_WORDS.flat().filter(w => w !== target && !distractorPool.includes(w));
+    distractorPool = [...distractorPool, ...allWords];
+  }
   const distractors = shuffle(distractorPool).slice(0, 3);
 
   // Combine and shuffle
@@ -323,6 +328,7 @@ export default function SightWordStars(props: BasicsGameProps) {
     options: [],
   });
   const [roundKey, setRoundKey] = useState(0);
+  const [wrongThisRound, setWrongThisRound] = useState(false);
 
   // Generate new words when round changes
   const generateRound = useCallback(() => {
@@ -350,11 +356,16 @@ export default function SightWordStars(props: BasicsGameProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, roundKey]);
 
+  // Reset wrongThisRound when roundKey changes (new round generated)
+  useEffect(() => {
+    setWrongThisRound(false);
+  }, [roundKey]);
+
   // Handle correct tap
   const handleCorrect = useCallback(() => {
     audio.playChime();
     tts.sayEncouragement();
-    submitAnswer(true);
+    submitAnswer(!wrongThisRound);
 
     // Next round after delay
     setTimeout(() => {
@@ -362,11 +373,12 @@ export default function SightWordStars(props: BasicsGameProps) {
       generateRound();
     }, 1400);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [generateRound]);
+  }, [generateRound, wrongThisRound]);
 
   // Handle wrong tap
   const handleWrong = useCallback(() => {
     audio.playBuzz();
+    setWrongThisRound(true);
     tts.sayRedirect(`The word is ${roundData.target}.`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roundData.target]);
@@ -442,7 +454,7 @@ export default function SightWordStars(props: BasicsGameProps) {
 
   // ── Playing / Feedback ──
   return (
-    <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
+    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <Canvas
         camera={{ position: [0, 1.5, 6], fov: 50 }}
         style={{ width: '100%', height: '100%' }}
@@ -506,7 +518,7 @@ export default function SightWordStars(props: BasicsGameProps) {
 
 const overlayStyle: React.CSSProperties = {
   width: '100%',
-  height: '100vh',
+  height: '100%',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',

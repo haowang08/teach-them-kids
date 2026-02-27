@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import { useRef, useState, useEffect, useMemo, useCallback, type CSSProperties } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Float, Text } from '@react-three/drei';
 import type * as THREE from 'three';
@@ -190,10 +190,10 @@ function BouncingGroup({
   active: boolean;
 }) {
   const ref = useRef<THREE.Group>(null);
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     if (!ref.current) return;
     if (active) {
-      ref.current.position.y = Math.abs(Math.sin(Date.now() * 0.008)) * 0.3;
+      ref.current.position.y = Math.abs(Math.sin(state.clock.elapsedTime * 8)) * 0.3;
     } else {
       ref.current.position.y += (0 - ref.current.position.y) * Math.min(delta * 5, 1);
     }
@@ -231,6 +231,11 @@ function AnswerBubble({
 }) {
   const ref = useRef<THREE.Group>(null);
   const wobbleStart = useRef(0);
+
+  // Cleanup cursor on unmount
+  useEffect(() => {
+    return () => { document.body.style.cursor = 'default'; };
+  }, []);
 
   useFrame(() => {
     if (!ref.current) return;
@@ -394,6 +399,12 @@ export default function MultiplicationMeadow(props: BasicsGameProps) {
 
   const [wrongIndex, setWrongIndex] = useState<number | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [wrongThisRound, setWrongThisRound] = useState(false);
+
+  // Reset wrongThisRound when round changes
+  useEffect(() => {
+    setWrongThisRound(false);
+  }, [game.round]);
 
   // Auto-start the game
   useEffect(() => {
@@ -442,7 +453,7 @@ export default function MultiplicationMeadow(props: BasicsGameProps) {
         tts.sayEncouragement();
         setShowCelebration(true);
         setWrongIndex(null);
-        game.submitAnswer(true);
+        game.submitAnswer(!wrongThisRound);
 
         // Move to next round after a delay
         setTimeout(() => {
@@ -452,6 +463,7 @@ export default function MultiplicationMeadow(props: BasicsGameProps) {
       } else {
         // Wrong - wobble that bubble
         audio.playBuzz();
+        setWrongThisRound(true);
         tts.sayRedirect();
         setWrongIndex(index);
         // Clear wobble after animation
@@ -490,6 +502,12 @@ export default function MultiplicationMeadow(props: BasicsGameProps) {
         <p style={{ fontSize: '1.1rem', opacity: 0.8, margin: 0 }}>
           {game.score} / {game.totalRounds} correct ({game.accuracy}%)
         </p>
+        <button
+          onClick={onBack}
+          style={doneButtonStyle}
+        >
+          Done
+        </button>
       </div>
     );
   }
@@ -555,3 +573,16 @@ export default function MultiplicationMeadow(props: BasicsGameProps) {
     </div>
   );
 }
+
+const doneButtonStyle: CSSProperties = {
+  marginTop: 20,
+  background: 'rgba(255,255,255,0.2)',
+  border: '2px solid rgba(255,255,255,0.4)',
+  borderRadius: 12,
+  padding: '10px 24px',
+  color: '#fff',
+  fontSize: '1.2rem',
+  fontWeight: 700,
+  cursor: 'pointer',
+  fontFamily: "'Comic Sans MS', cursive",
+};

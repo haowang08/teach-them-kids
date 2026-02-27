@@ -336,8 +336,12 @@ function CelebrationParticles({ active }: { active: boolean }) {
       velocities[i * 3 + 1] -= 5 * delta;
     }
 
-    geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geom.attributes.position.needsUpdate = true;
+    const attr = geom.getAttribute('position') as THREE.BufferAttribute;
+    if (attr) {
+      attr.needsUpdate = true;
+    } else {
+      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    }
   });
 
   if (!active || !positionsRef.current) return null;
@@ -456,6 +460,7 @@ export default function StoryBook(props: BasicsGameProps) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [wrongChoice, setWrongChoice] = useState<string | null>(null);
   const [highlightWord, setHighlightWord] = useState(-1);
+  const [wrongThisRound, setWrongThisRound] = useState(false);
 
   // Reset when round changes
   useEffect(() => {
@@ -463,18 +468,19 @@ export default function StoryBook(props: BasicsGameProps) {
     setShowCelebration(false);
     setWrongChoice(null);
     setHighlightWord(-1);
+    setWrongThisRound(false);
   }, [round]);
 
   // Read sentence aloud with word highlighting when round starts
   useEffect(() => {
     if (phase !== 'playing' || !currentRound) return;
 
-    const fullSentence = buildFullSentence(currentRound.text, currentRound.answer);
-    const words = fullSentence.split(' ');
+    const displaySentence = currentRound.text.replace('___', 'blank');
+    const words = displaySentence.split(' ');
 
-    // Read full sentence after a brief delay
+    // Read sentence with "blank" instead of the answer
     const readTimer = setTimeout(() => {
-      tts.saySentence(fullSentence);
+      tts.saySentence(displaySentence);
     }, 500);
 
     // Highlight words sequentially (approximate timing)
@@ -518,7 +524,12 @@ export default function StoryBook(props: BasicsGameProps) {
         setAnswered(true);
         setShowCelebration(true);
         setWrongChoice(null);
-        submitAnswer(true);
+        submitAnswer(!wrongThisRound);
+
+        // Read the full correct sentence as confirmation
+        setTimeout(() => {
+          tts.saySentence(buildFullSentence(currentRound.text, currentRound.answer));
+        }, 800);
 
         // Auto advance after celebration
         setTimeout(() => {
@@ -527,6 +538,7 @@ export default function StoryBook(props: BasicsGameProps) {
       } else {
         // Wrong!
         audio.playBuzz();
+        setWrongThisRound(true);
         tts.sayRedirect();
         setWrongChoice(word);
         setTimeout(() => setWrongChoice(null), 600);
@@ -538,8 +550,7 @@ export default function StoryBook(props: BasicsGameProps) {
   // Replay sentence
   const handleReplay = useCallback(() => {
     if (currentRound) {
-      const fullSentence = buildFullSentence(currentRound.text, currentRound.answer);
-      tts.saySentence(fullSentence);
+      tts.saySentence(currentRound.text.replace('___', 'blank'));
     }
   }, [currentRound, tts]);
 

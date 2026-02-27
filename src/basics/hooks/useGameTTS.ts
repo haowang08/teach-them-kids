@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 
 // ---------------------------------------------------------------------------
@@ -48,12 +48,6 @@ function pickRandom<T>(arr: T[]): T {
 export function useGameTTS() {
   const tts = useTextToSpeech();
 
-
-  // Apply kid-friendly defaults once
-  // We set rate and pitch on the underlying hook so every utterance inherits them
-  useMemo(() => {
-    tts.setRate(0.85);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   /** Internal speak helper that also sets pitch via the utterance. */
   const speak = useCallback(

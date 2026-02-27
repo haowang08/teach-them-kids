@@ -146,9 +146,9 @@ export default function GameShell() {
 
   // Render the actual game
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100dvh' }}>
       <Suspense fallback={
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#FFFFFF', fontFamily: FONT, fontSize: '1.3rem', fontWeight: 700 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh', color: '#FFFFFF', fontFamily: FONT, fontSize: '1.3rem', fontWeight: 700 }}>
           Loading game...
         </div>
       }>

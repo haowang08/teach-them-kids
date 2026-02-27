@@ -181,7 +181,17 @@ export interface Reward {
     | 'piggy-bank-planner'
     | 'city-planner'
     | 'zeros-journey'
-    | 'taj-architect';
+    | 'taj-architect'
+    | 'spy-network-builder'
+    | 'factory-inspector'
+    | 'voices-of-change'
+    | 'march-for-justice'
+    | 'revolution-timeline'
+    | 'smell-lab'
+    | 'science-hall-of-fame'
+    | 'ecosystem-builder'
+    | 'storm-chaser'
+    | 'climate-dashboard';
   embedUrl?: string;
   embedTitle?: string;
   celebrationMessage: string;

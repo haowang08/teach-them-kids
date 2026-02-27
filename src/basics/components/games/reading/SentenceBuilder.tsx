@@ -373,8 +373,12 @@ function CelebrationParticles({ active }: { active: boolean }) {
       velocities[i * 3 + 1] -= 5 * delta;
     }
 
-    geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geom.attributes.position.needsUpdate = true;
+    const attr = geom.getAttribute('position') as THREE.BufferAttribute;
+    if (attr) {
+      attr.needsUpdate = true;
+    } else {
+      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    }
   });
 
   if (!active || !positionsRef.current) return null;
@@ -518,6 +522,7 @@ export default function SentenceBuilder(props: BasicsGameProps) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [wrongFeedback, setWrongFeedback] = useState(false);
   const [roundComplete, setRoundComplete] = useState(false);
+  const [wrongThisRound, setWrongThisRound] = useState(false);
 
   // Reset when round changes
   useEffect(() => {
@@ -536,17 +541,22 @@ export default function SentenceBuilder(props: BasicsGameProps) {
     setShowCelebration(false);
     setWrongFeedback(false);
     setRoundComplete(false);
+    setWrongThisRound(false);
   }, [round, currentRound]);
 
   // Read sentence aloud when round starts
   useEffect(() => {
     if (phase === 'playing' && currentRound) {
-      const timer = setTimeout(() => {
-        tts.saySentence(currentRound.correct);
-      }, 500);
-      return () => clearTimeout(timer);
+      // For levels 0-1, auto-read as a "listen and arrange" exercise.
+      // For level 2+, require the child to tap the speaker button.
+      if (level <= 1) {
+        const timer = setTimeout(() => {
+          tts.saySentence(currentRound.correct);
+        }, 500);
+        return () => clearTimeout(timer);
+      }
     }
-  }, [phase, round]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [phase, round, level]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle complete phase
   useEffect(() => {
@@ -592,7 +602,7 @@ export default function SentenceBuilder(props: BasicsGameProps) {
           setShowCelebration(true);
           audio.playChime();
           tts.sayEncouragement();
-          submitAnswer(true);
+          submitAnswer(!wrongThisRound);
 
           // Auto advance after celebration
           setTimeout(() => {
@@ -602,6 +612,7 @@ export default function SentenceBuilder(props: BasicsGameProps) {
       } else {
         // Wrong word
         audio.playBuzz();
+        setWrongThisRound(true);
         tts.sayRedirect();
         setWrongFeedback(true);
         setTimeout(() => setWrongFeedback(false), 600);

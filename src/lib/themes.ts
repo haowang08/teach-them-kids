@@ -1251,6 +1251,27 @@ export const givingAndSharingTheme: TopicTheme = {
     'linear-gradient(90deg, #D4A017, #AD1457, #D4A017)',
 };
 
+export const unsungHeroesTheme: TopicTheme = {
+  id: 'unsung-heroes',
+  colors: {
+    gold: '#B8860B',
+    primary: '#2C1810',
+    secondary: '#5C3A21',
+    cream: '#F5EDE0',
+    accent: '#8B2500',
+    darkBrown: '#1A0F0A',
+    sand: '#D4C4A8',
+    bronze: '#8B6914',
+    goldLight: '#E8D5A0',
+  },
+  heroGradient:
+    'linear-gradient(180deg, rgba(44, 24, 16, 0.95) 0%, rgba(92, 58, 33, 0.85) 50%, rgba(139, 37, 0, 0.9) 100%)',
+  navGradient:
+    'linear-gradient(90deg, #2C1810, #5C3A21, #2C1810)',
+  sectionBorderGradient:
+    'linear-gradient(90deg, #B8860B, #8B2500, #B8860B)',
+};
+
 export const themes: Record<string, TopicTheme> = {
   'ancient-egypt': ancientEgyptTheme,
   'ancient-rome': ancientRomeTheme,
@@ -1316,6 +1337,8 @@ export const themes: Record<string, TopicTheme> = {
   'investing-basics': investingBasicsTheme,
   'banks-how-they-work': banksHowTheyWorkTheme,
   'giving-and-sharing': givingAndSharingTheme,
+  // Unsung Heroes
+  'unsung-heroes': unsungHeroesTheme,
 };
 
 export function getTheme(themeId: string): TopicTheme | undefined {

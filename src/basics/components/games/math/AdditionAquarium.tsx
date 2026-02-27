@@ -388,6 +388,7 @@ export default function AdditionAquarium(props: BasicsGameProps) {
   const [showAnswer, setShowAnswer] = useState(false);
   const [bubbleStates, setBubbleStates] = useState<Record<number, 'idle' | 'correct' | 'wrong'>>({});
   const [answered, setAnswered] = useState(false);
+  const [wrongThisRound, setWrongThisRound] = useState(false);
 
   // Reset per-round state when round changes
   useEffect(() => {
@@ -397,6 +398,7 @@ export default function AdditionAquarium(props: BasicsGameProps) {
       setShowAnswer(false);
       setBubbleStates({});
       setAnswered(false);
+      setWrongThisRound(false);
 
       // Brief delay then show fish and speak
       const timer = setTimeout(() => {
@@ -422,6 +424,10 @@ export default function AdditionAquarium(props: BasicsGameProps) {
         accuracy >= 80 ? 'Amazing job! You are a fish counting champion!' : 'Good try! Keep practicing!',
       );
       audio.playLevelUp();
+      const timer = setTimeout(() => {
+        onComplete(accuracy);
+      }, 2500);
+      return () => clearTimeout(timer);
     }
   }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -437,7 +443,7 @@ export default function AdditionAquarium(props: BasicsGameProps) {
         setAnswered(true);
         audio.playChime();
         tts.sayEncouragement();
-        submitAnswer(true);
+        submitAnswer(!wrongThisRound);
 
         // Move to next round after a short celebration
         setTimeout(() => {
@@ -448,6 +454,7 @@ export default function AdditionAquarium(props: BasicsGameProps) {
         // Wrong - wobble and try again
         setBubbleStates((prev) => ({ ...prev, [value]: 'wrong' }));
         audio.playBuzz();
+        setWrongThisRound(true);
         tts.sayRedirect();
 
         // Reset wrong state after wobble animation
@@ -497,24 +504,16 @@ export default function AdditionAquarium(props: BasicsGameProps) {
             </span>
           ))}
         </div>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <button onClick={onBack} style={hudBtnStyle}>
-            {'\u2190'} Back
-          </button>
-          <button
-            onClick={() => onComplete(accuracy)}
-            style={{ ...hudBtnStyle, background: '#1565C0' }}
-          >
-            Done {'\u2714'}
-          </button>
-        </div>
+        <button onClick={onBack} style={{ ...hudBtnStyle, background: '#1565C0' }}>
+          Done {'\u2714'}
+        </button>
       </div>
     );
   }
 
   // ── Main game rendering ──
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <Canvas
         camera={{ position: [0, 0, 6], fov: 50 }}
         style={{ width: '100%', height: '100%' }}

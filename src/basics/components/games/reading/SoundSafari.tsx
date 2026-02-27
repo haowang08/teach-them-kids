@@ -114,6 +114,22 @@ function generateRounds(level: number): RoundData[] {
       }
     }
 
+    // Safety: if not enough distractors from this level, pull from all phonemes
+    if (uniqueOthers.length < CHOICES_PER_ROUND - 1) {
+      const allOthers: PhonemeWord[] = [];
+      for (const p of PHONEMES) {
+        if (p.phoneme !== entry.phoneme) {
+          allOthers.push(...p.words, ...p.distractors);
+        }
+      }
+      for (const item of shuffle(allOthers)) {
+        if (!seen.has(item.word)) {
+          seen.add(item.word);
+          uniqueOthers.push(item);
+        }
+      }
+    }
+
     const distractors = uniqueOthers.slice(0, CHOICES_PER_ROUND - 1);
     const choices = shuffle([
       { ...correctWord, isCorrect: true },
@@ -408,6 +424,7 @@ export default function SoundSafari(props: BasicsGameProps) {
   );
   const [showCelebration, setShowCelebration] = useState(false);
   const [roundLocked, setRoundLocked] = useState(false);
+  const [wrongThisRound, setWrongThisRound] = useState(false);
   const celebrationKey = useRef(0);
 
   // Reset on new round
@@ -415,6 +432,7 @@ export default function SoundSafari(props: BasicsGameProps) {
     setCardStates(Array(CHOICES_PER_ROUND).fill('idle'));
     setShowCelebration(false);
     setRoundLocked(false);
+    setWrongThisRound(false);
   }, [round]);
 
   // Speak prompt when round starts
@@ -452,10 +470,11 @@ export default function SoundSafari(props: BasicsGameProps) {
         setShowCelebration(true);
         audio.playChime();
         tts.sayEncouragement();
-        submitAnswer(true);
+        submitAnswer(!wrongThisRound);
         setTimeout(() => nextRound(), 2000);
       } else {
         audio.playBuzz();
+        setWrongThisRound(true);
         const newStates = [...cardStates] as CardState[];
         newStates[index] = 'wrong';
         setCardStates(newStates);
@@ -469,7 +488,7 @@ export default function SoundSafari(props: BasicsGameProps) {
         }, 500);
       }
     },
-    [phase, roundLocked, currentRound, cardStates, audio, tts, submitAnswer, nextRound],
+    [phase, roundLocked, currentRound, cardStates, audio, tts, submitAnswer, nextRound, wrongThisRound],
   );
 
   // Replay prompt

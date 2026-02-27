@@ -77,10 +77,10 @@ function CheckpointFlag({
 }) {
   const flagRef = useRef<THREE.Mesh>(null);
 
-  useFrame(() => {
+  useFrame((state) => {
     if (!flagRef.current || !active) return;
     // Wave the flag when active
-    flagRef.current.rotation.y = Math.sin(Date.now() * 0.005) * 0.3;
+    flagRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 5) * 0.3;
   });
 
   const flagColor = reached ? '#4CAF50' : active ? '#F44336' : '#9E9E9E';
@@ -110,9 +110,9 @@ function CheckpointFlag({
 function SummitFlag() {
   const ref = useRef<THREE.Group>(null);
 
-  useFrame(() => {
+  useFrame((state) => {
     if (!ref.current) return;
-    ref.current.rotation.y = Math.sin(Date.now() * 0.003) * 0.2;
+    ref.current.rotation.y = Math.sin(state.clock.elapsedTime * 3) * 0.2;
   });
 
   return (
@@ -229,8 +229,10 @@ function AnswerStone({
   });
 
   useEffect(() => {
-    scaleRef.current = 1;
-    if (ref.current) ref.current.scale.setScalar(1);
+    if (state === 'idle') {
+      scaleRef.current = 1;
+      if (ref.current) ref.current.scale.setScalar(1);
+    }
   }, [state]);
 
   if (state === 'hidden' || state === 'correct') return null;
@@ -288,20 +290,23 @@ function RockSign({ problem, position }: { problem: MathProblem; position: [numb
   );
 }
 
+const _cameraOffset = new THREE.Vector3(3, 2, 6);
+const _lookOffset = new THREE.Vector3(0, 0.5, 0);
+
 /** Camera that follows the active checkpoint */
 function FollowCamera({ target }: { target: [number, number, number] }) {
   const targetVec = useRef(new THREE.Vector3(...target));
   targetVec.current.set(...target);
+  const desiredRef = useRef(new THREE.Vector3());
+  const lookRef = useRef(new THREE.Vector3());
 
   useFrame(({ camera }) => {
     // Position camera offset from the checkpoint
-    const desired = targetVec.current.clone().add(new THREE.Vector3(3, 2, 6));
-    camera.position.lerp(desired, 0.03);
+    desiredRef.current.copy(targetVec.current).add(_cameraOffset);
+    camera.position.lerp(desiredRef.current, 0.03);
     // Look at the checkpoint area
-    const lookTarget = targetVec.current.clone().add(new THREE.Vector3(0, 0.5, 0));
-    const currentLook = new THREE.Vector3();
-    camera.getWorldDirection(currentLook);
-    camera.lookAt(lookTarget);
+    lookRef.current.copy(targetVec.current).add(_lookOffset);
+    camera.lookAt(lookRef.current);
   });
 
   return null;
@@ -452,6 +457,7 @@ export default function MathMountain(props: BasicsGameProps) {
   );
   const [showSummit, setShowSummit] = useState(false);
   const climbTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [wrongThisRound, setWrongThisRound] = useState(false);
 
   const currentProblem = problems[game.round - 1];
   const currentCheckpoint = game.round - 1;
@@ -459,6 +465,7 @@ export default function MathMountain(props: BasicsGameProps) {
   // Reset answer states on new round
   useEffect(() => {
     setAnswerStates(new Array(4).fill('idle') as ('idle' | 'wrong' | 'correct' | 'hidden')[]);
+    setWrongThisRound(false);
 
     if (game.phase === 'playing' && currentProblem) {
       tts.saySentence(
@@ -478,7 +485,7 @@ export default function MathMountain(props: BasicsGameProps) {
         audio.playChime();
         tts.sayEncouragement();
         setAnswerStates((prev) => prev.map((_s, i) => (i === choiceIndex ? 'correct' : 'hidden')));
-        game.submitAnswer(true);
+        game.submitAnswer(!wrongThisRound);
 
         // Mark checkpoint reached and climb
         setReachedCheckpoints((prev) => {
@@ -503,6 +510,7 @@ export default function MathMountain(props: BasicsGameProps) {
         // Wrong: crumble the stone
         audio.playBuzz();
         tts.sayRedirect();
+        setWrongThisRound(true);
         setAnswerStates((prev) =>
           prev.map((s, i) => (i === choiceIndex ? 'wrong' : s)),
         );
@@ -510,7 +518,7 @@ export default function MathMountain(props: BasicsGameProps) {
         // The child can still try other stones.
       }
     },
-    [game, currentProblem, currentCheckpoint, audio, tts],
+    [game, currentProblem, currentCheckpoint, audio, tts, wrongThisRound],
   );
 
   // Handle intro
@@ -542,7 +550,7 @@ export default function MathMountain(props: BasicsGameProps) {
   }, []);
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <Canvas
         camera={{ position: [6, 4, 10], fov: 50 }}
         gl={{ antialias: true }}
@@ -656,6 +664,24 @@ export default function MathMountain(props: BasicsGameProps) {
           <p style={{ fontSize: '1.4rem' }}>
             {game.score} / {TOTAL_ROUNDS} correct ({game.accuracy}%)
           </p>
+          <button
+            onClick={onBack}
+            style={{
+              marginTop: 20,
+              background: 'rgba(255,255,255,0.2)',
+              border: '2px solid rgba(255,255,255,0.4)',
+              borderRadius: 12,
+              padding: '10px 24px',
+              color: '#FFF',
+              fontSize: '1.2rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: "'Comic Sans MS', cursive",
+              pointerEvents: 'auto',
+            }}
+          >
+            Done
+          </button>
         </div>
       )}
     </div>
