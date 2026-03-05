@@ -1,5 +1,6 @@
 import { useState, useCallback, lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import { ProgressProvider } from './context/ProgressContext'
 import AppLayout from './components/layout/AppLayout'
 import JourneyMapPage from './components/landing/JourneyMap'
@@ -77,6 +78,7 @@ function App() {
   return (
     <ProgressProvider>
       <AppInner />
+      <Analytics />
     </ProgressProvider>
   )
 }
