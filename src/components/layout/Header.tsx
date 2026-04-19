@@ -88,10 +88,10 @@ export default function Header() {
             <p className="text-[10px] text-[#CD7F32]">
               Feedback or see something wrong? Contact us at{' '}
               <a
-                href="mailto:info@padna.app"
+                href="mailto:hello@padna.ai"
                 className="text-[#F5E6A3] hover:text-white underline underline-offset-2"
               >
-                info@padna.app
+                hello@padna.ai
               </a>
             </p>
           </div>
