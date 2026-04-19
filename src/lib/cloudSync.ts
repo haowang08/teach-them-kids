@@ -170,6 +170,8 @@ function mergeTopicProgress(a: TopicProgress, b: TopicProgress): TopicProgress {
     essayCharCount: Math.max(a.essayCharCount ?? 0, b.essayCharCount ?? 0),
     essayText: textA.length >= textB.length ? textA : textB,
     rewardUnlocked: a.rewardUnlocked || b.rewardUnlocked,
+    activityCompleted: a.activityCompleted || b.activityCompleted || undefined,
+    activityPhotoCount: Math.max(a.activityPhotoCount ?? 0, b.activityPhotoCount ?? 0) || undefined,
   };
 }
 

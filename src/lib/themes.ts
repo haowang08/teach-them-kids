@@ -1272,6 +1272,27 @@ export const scienceTheme: TopicTheme = {
     'linear-gradient(90deg, #00BFA5, #00796B, #00BFA5)',
 };
 
+export const learnToDrawTheme: TopicTheme = {
+  id: 'learn-to-draw',
+  colors: {
+    gold: '#F59E0B',
+    primary: '#BE185D',
+    secondary: '#DB2777',
+    cream: '#FFF4F0',
+    accent: '#06B6D4',
+    darkBrown: '#3A1A2A',
+    sand: '#FBCFE8',
+    bronze: '#C2410C',
+    goldLight: '#FEF3C7',
+  },
+  heroGradient:
+    'linear-gradient(180deg, rgba(190, 24, 93, 0.92) 0%, rgba(219, 39, 119, 0.85) 45%, rgba(251, 146, 60, 0.9) 100%)',
+  navGradient:
+    'linear-gradient(90deg, #BE185D, #DB2777, #BE185D)',
+  sectionBorderGradient:
+    'linear-gradient(90deg, #F59E0B, #DB2777, #F59E0B)',
+};
+
 export const unsungHeroesTheme: TopicTheme = {
   id: 'unsung-heroes',
   colors: {
@@ -1360,6 +1381,8 @@ export const themes: Record<string, TopicTheme> = {
   'giving-and-sharing': givingAndSharingTheme,
   // Unsung Heroes
   'unsung-heroes': unsungHeroesTheme,
+  // Learn to Draw
+  'learn-to-draw': learnToDrawTheme,
   // Science
   'science': scienceTheme,
 };

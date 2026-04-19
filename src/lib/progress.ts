@@ -22,6 +22,10 @@ export function computeTopicCompletion(
   const topicProgress = progress.topics[topicId];
   if (!topicProgress) return 0;
 
+  if (meta.mode === 'activity') {
+    return topicProgress.activityCompleted ? 100 : 0;
+  }
+
   const totalQuizzes = meta.quizCount;
   if (totalQuizzes === 0) return 0;
 
@@ -170,6 +174,7 @@ export function checkRewardUnlockFull(
   const topicProgress = progress.topics[topicId];
   if (!topicProgress) return false;
   if (!topic.reward) return false;
+  if (!topic.essay) return false;
 
   const allQuizzesCorrect = topic.quizzes.every((quiz) => {
     const attempt = topicProgress.quizAttempts[quiz.id];

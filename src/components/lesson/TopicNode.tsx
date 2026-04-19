@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useProgress } from '../../hooks/useProgress';
 import ProgressRing from '../common/ProgressRing';
 import ComingSoonBadge from '../common/ComingSoonBadge';
+import { topicMeta } from '../../data/curriculum';
 import type { Status } from '../../data/types';
 
 interface TopicNodeProps {
@@ -30,9 +31,17 @@ export default function TopicNode({
   const isComingSoon = status === 'coming-soon';
   const isCompleted = completion === 100;
   const isInProgress = completion > 0 && completion < 100;
+  const isActivity = topicMeta[topicId]?.mode === 'activity';
 
-  // Star rating based on accuracy (for completed topics)
-  const starCount = accuracy >= 90 ? 3 : accuracy >= 70 ? 2 : 1;
+  // Star rating: activity topics award 3 stars on completion (no accuracy metric).
+  // Standard topics use quiz accuracy.
+  const starCount = isActivity && isCompleted
+    ? 3
+    : accuracy >= 90
+      ? 3
+      : accuracy >= 70
+        ? 2
+        : 1;
 
   const label = isComingSoon
     ? ''

@@ -765,6 +765,42 @@ export const topicMeta: Record<string, TopicMeta> = {
     essayMinChars: 100,
     hasReward: true,
   },
+  'learn-to-draw-desserts': {
+    id: 'learn-to-draw-desserts',
+    slug: 'learn-to-draw-desserts',
+    title: 'Draw Cute Desserts & Drinks',
+    subtitle: 'Kawaii donuts, ice cream, bubble tea, and two kinds of cake!',
+    status: 'active',
+    heroIcons: ['\u{1F369}', '\u{1F366}', '\u{1F382}'],
+    quizCount: 0,
+    essayMinChars: 0,
+    hasReward: false,
+    mode: 'activity',
+  },
+  'learn-to-draw-kpop': {
+    id: 'learn-to-draw-kpop',
+    slug: 'learn-to-draw-kpop',
+    title: 'Draw K-pop Chibi Stars',
+    subtitle: 'Full-figure chibi drawings of 5 members from 5 different girl groups!',
+    status: 'active',
+    heroIcons: ['\u{1F3A4}', '\u{1F338}', '\u2728'],
+    quizCount: 0,
+    essayMinChars: 0,
+    hasReward: false,
+    mode: 'activity',
+  },
+  'learn-to-draw-fruit': {
+    id: 'learn-to-draw-fruit',
+    slug: 'learn-to-draw-fruit',
+    title: 'Draw Kawaii Fruit',
+    subtitle: 'From classic strawberries to exotic dragon fruit!',
+    status: 'active',
+    heroIcons: ['\u{1F353}', '\u{1F349}', '\u{1F34D}'],
+    quizCount: 0,
+    essayMinChars: 0,
+    hasReward: false,
+    mode: 'activity',
+  },
 };
 
 // ─── Dynamic topic loaders (lazy-loaded on demand) ─────────────────
@@ -839,6 +875,9 @@ const topicLoaders: Record<string, () => Promise<Topic>> = {
   'natural-ecosystems': () => import('./topics/natural-ecosystems').then(m => m.naturalEcosystems),
   'crazy-weather': () => import('./topics/crazy-weather').then(m => m.crazyWeather),
   'climate-change': () => import('./topics/climate-change').then(m => m.climateChange),
+  'learn-to-draw-desserts': () => import('./topics/learn-to-draw-desserts').then(m => m.learnToDrawDesserts),
+  'learn-to-draw-kpop': () => import('./topics/learn-to-draw-kpop').then(m => m.learnToDrawKpop),
+  'learn-to-draw-fruit': () => import('./topics/learn-to-draw-fruit').then(m => m.learnToDrawFruit),
 };
 
 // ─── Topic cache (populated on demand) ─────────────────────────────
@@ -971,6 +1010,18 @@ export const lessons: Record<string, Lesson> = {
       'climate-change',
     ],
   },
+  'learn-to-draw': {
+    id: 'learn-to-draw',
+    title: 'Learn to Draw',
+    icon: '\u{1F58D}\uFE0F',
+    description: 'Follow real YouTube art teachers to draw cute desserts, K-pop stars, and fruit — then snap a photo of your artwork!',
+    status: 'active',
+    topicIds: [
+      'learn-to-draw-desserts',
+      'learn-to-draw-kpop',
+      'learn-to-draw-fruit',
+    ],
+  },
 };
 
 // ─── Curriculum structure ────────────────────────────────────────
@@ -986,7 +1037,7 @@ export const curriculum: Curriculum = {
       icon: '\u{1F30D}',
       description:
         'Travel through time and discover the world\'s most amazing civilizations!',
-      lessonIds: ['ancient-civilizations', 'fun-math', 'not-so-fun-math', 'art', 'food', 'money-matters', 'unsung-heroes', 'science'],
+      lessonIds: ['ancient-civilizations', 'fun-math', 'not-so-fun-math', 'art', 'food', 'money-matters', 'unsung-heroes', 'science', 'learn-to-draw'],
     },
   ],
 };

@@ -28,6 +28,8 @@ export interface Lesson {
   topicIds: string[];
 }
 
+export type TopicMode = 'standard' | 'activity';
+
 export interface Topic {
   id: string;
   slug: string;
@@ -38,10 +40,18 @@ export interface Topic {
   heroIcons: string[];
   sections: TopicSection[];
   quizzes: Quiz[];
-  essay: Essay;
+  essay?: Essay;
   reward?: Reward;
   conclusion: ConclusionData;
   navItems: NavItem[];
+  mode?: TopicMode;
+  activityPrompt?: ActivityPrompt;
+}
+
+export interface ActivityPrompt {
+  title: string;
+  description: string;
+  completionLabel: string;
 }
 
 /**
@@ -58,6 +68,7 @@ export interface TopicMeta {
   quizCount: number;
   essayMinChars: number;
   hasReward: boolean;
+  mode?: TopicMode;
 }
 
 // ============================================
@@ -250,6 +261,8 @@ export interface TopicProgress {
   essayCharCount: number;
   essayText: string;
   rewardUnlocked: boolean;
+  activityCompleted?: boolean;
+  activityPhotoCount?: number;
 }
 
 export interface QuizAttempt {

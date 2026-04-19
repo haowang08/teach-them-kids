@@ -23,6 +23,7 @@ interface ProgressContextValue {
   recordEssaySave: (topicId: string, text: string, charCount: number) => void;
   recordEssayDraft: (topicId: string, text: string) => void;
   markRewardUnlocked: (topicId: string) => void;
+  recordActivityCompletion: (topicId: string, completed: boolean, photoCount: number) => void;
   getTopicProgress: (topicId: string) => TopicProgress;
   resetProgress: () => void;
 }
@@ -234,6 +235,29 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const recordActivityCompletion = useCallback(
+    (topicId: string, completed: boolean, photoCount: number) => {
+      setProgress((prev) => {
+        const topic = prev.topics[topicId] ?? { ...defaultTopicProgress };
+        const isFirstCompletion = completed && !topic.activityCompleted;
+        const xpGain = isFirstCompletion ? 100 : 0;
+        return {
+          ...prev,
+          xp: prev.xp + xpGain,
+          topics: {
+            ...prev.topics,
+            [topicId]: {
+              ...topic,
+              activityCompleted: completed,
+              activityPhotoCount: photoCount,
+            },
+          },
+        };
+      });
+    },
+    []
+  );
+
   const getTopicProgress = useCallback(
     (topicId: string): TopicProgress => {
       return ensureTopicProgress(topicId);
@@ -256,6 +280,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     recordEssaySave,
     recordEssayDraft,
     markRewardUnlocked,
+    recordActivityCompletion,
     getTopicProgress,
     resetProgress,
   };

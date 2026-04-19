@@ -14,6 +14,7 @@ import BreadcrumbNav from '../navigation/BreadcrumbNav';
 import ContentSection from './ContentSection';
 import EssaySection from '../essay/EssaySection';
 import RewardSection from '../rewards/RewardSection';
+import PhotoGallery from './PhotoGallery';
 import TopicLinks from '../navigation/TopicLinks';
 import ScrollToTop from '../common/ScrollToTop';
 
@@ -130,8 +131,19 @@ export default function TopicPage() {
           />
         ))}
 
+        {/* Photo gallery (activity topics) */}
+        {topic.mode === 'activity' && topic.activityPrompt && (
+          <PhotoGallery
+            topicId={topic.id}
+            prompt={topic.activityPrompt}
+            filenamePrefix={topic.slug}
+          />
+        )}
+
         {/* Essay */}
-        <EssaySection essay={topic.essay} topicId={topic.id} />
+        {topic.essay && (
+          <EssaySection essay={topic.essay} topicId={topic.id} />
+        )}
 
         {/* Conclusion */}
         <section id="conclusion" className="my-8">
